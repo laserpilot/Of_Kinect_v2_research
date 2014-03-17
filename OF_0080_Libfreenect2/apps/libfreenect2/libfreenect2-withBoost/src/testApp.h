@@ -50,4 +50,7 @@ public:
     
     bool bMeshSnapshot;
     
+    int primitiveMode;
+    bool bRainbow;
+    
 };

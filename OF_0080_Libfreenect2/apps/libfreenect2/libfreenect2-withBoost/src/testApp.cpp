@@ -7,8 +7,11 @@ ofTexture tex;
 
 //these are define in protonect.cpp
 extern ofPixels pix;
-int SENSOR_W = 1920;
-int SENSOR_H = 1080;
+const int SENSOR_W = 1920;
+const int SENSOR_H = 1080;
+
+const int DEPTH_W = 512;
+const int DEPTH_H = 424;
 
 
 extern void updateKinect();
@@ -46,7 +49,10 @@ void testApp::setup() {
     depthMesh.enableColors();
     depthMesh.setMode(OF_PRIMITIVE_POINTS);
     
-//    depthMesh.enableIndices();
+    primitiveMode = 0;
+    depthMesh.enableIndices();
+    
+    bRainbow = false;
 }
 
 //--------------------------------------------------------------
@@ -72,45 +78,19 @@ void testApp::update() {
         if(r[i] == 1.0) r[i] =0.0;
     }
     
-    if (r.size() > 0 && bMeshSnapshot) {
-        depthMesh.clear();
-        for(int x = 0; x < 512; x++){
-            for (int y = 0; y < 424; y++) {
-                int i = y * 512 + x;
-                depthMesh.addVertex(ofVec3f(x,y, r[i]*1000));
-                depthMesh.addColor(ofFloatColor(r[i]));
-            }
-        }
-        
-//        for (int y = 0; y<424-1; y++){
-//            for (int x=0; x<512-1; x++){
-//                depthMesh.addIndex(x+y*512);       // 0
-//                depthMesh.addIndex((x+1)+y*512);     // 1
-//                depthMesh.addIndex(x+(y+1)*512);     // 10
-//                
-//                depthMesh.addIndex((x+1)+y*512);     // 1
-//                depthMesh.addIndex((x+1)+(y+1)*512);   // 11
-//                depthMesh.addIndex(x+(y+1)*512);     // 10
-//            }
-//        }
-//        bMeshSnapshot = false;
-    }
-    /*
-    if (bPrintImageVals) cout << r.size() << endl; bPrintImageVals = false;
-    
     // blur image slighty by averaging pixel with neighbours
     if (bBlur) {
         ofFloatPixelsRef temp = depthFloat.getPixelsRef();
-    
+        
         if (temp.size() > 0) {
-            for(int x = 1; x < 511; x++){
-                for (int y = 1; y < 423; y++) {
-                    int i = y * 512 + x;
-                    int top = (y-1) * 512 + x;
-                    int bottom = (y+1) * 512 + x;
-                    int left = y * 512 + (x-1);
-                    int right = y * 512 + (x+1);
-
+            for(int x = 1; x < DEPTH_W-1; x++){
+                for (int y = 1; y < DEPTH_H-1; y++) {
+                    int i = y * DEPTH_W + x;
+                    int top = (y-1) * DEPTH_W + x;
+                    int bottom = (y+1) * DEPTH_W + x;
+                    int left = y * DEPTH_W + (x-1);
+                    int right = y * DEPTH_W + (x+1);
+                    
                     r[i] = bIncludePixel ?
                     (temp[i] + temp[top] + temp[bottom] + temp[left] + temp[right]) * 0.20
                     : (temp[top] + temp[bottom] + temp[left] + temp[right]) * 0.25;
@@ -120,6 +100,39 @@ void testApp::update() {
     }
     
     depthFloat.setFromPixels(r);
+    
+    if (r.size() > 0 && bMeshSnapshot) {
+        depthMesh.clear();
+        for(int x = 0; x < DEPTH_W; x++){
+            for (int y = 0; y < DEPTH_H; y++) {
+                int i = y * DEPTH_W + x;
+                if (r[i] > 0.0) {
+                    depthMesh.addVertex(ofVec3f(x,y, r[i]*2000));
+                    ofFloatColor vertexCol;
+                    vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
+//                    depthMesh.addColor(vertexCol); //ofFloatColor(r[i])
+                    depthMesh.addColor(bRainbow ? vertexCol : ofFloatColor(r[i]));
+                }
+            }
+        }
+        
+//        for (int y = 0; y<DEPTH_H-1; y++){
+//            for (int x=0; x<DEPTH_W-1; x++){
+//                depthMesh.addIndex(x+y*DEPTH_W);       // 0
+//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
+//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
+//                
+//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
+//                depthMesh.addIndex((x+1)+(y+1)*DEPTH_W);   // 11
+//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
+//            }
+//        }
+//        bMeshSnapshot = false;
+    }
+    
+    if (bPrintImageVals) cout << r.size() << endl; bPrintImageVals = false;
+    
+
     
     //threshold image
     for(int i = 0; i < r.size(); i++){
@@ -133,9 +146,9 @@ void testApp::update() {
     if (r.size() > 0) {
         cvFloatImg.setFromPixels(r);
         cvGrayImg = cvFloatImg;
-        contours.findContours(cvGrayImg, 20, (512*424)/3, 10, true);
+        contours.findContours(cvGrayImg, 20, (DEPTH_W*DEPTH_H)/3, 10, true);
     }
-*/
+
 }
 
 //--------------------------------------------------------------
@@ -143,14 +156,15 @@ void testApp::draw() {
 
 //    tex.draw(depthFloat.getWidth() + 4, 0, 192*4, 108*4);
 //    ofSetColor(255);
-//    tex.draw(0, 0, 1920.0/1080.0*424, 424);
-    
+//    tex.draw(0, 0, 1920.0/1080.0*DEPTH_H, DEPTH_H);
+//    ofEnableDepthTest();
     cam.begin();
     ofPushMatrix();
-    ofTranslate(-512/2, -424/2);
+    ofTranslate(-DEPTH_W/2, -DEPTH_H/2, -2000);
     depthMesh.draw();
     ofPopMatrix();
     cam.end();
+//    ofDisableDepthTest();
     
 //    depthFloat.draw(0, 0);
 //    threshFloat.draw(depthFloat.width+4, 0);
@@ -190,6 +204,14 @@ void testApp::keyPressed (int key) {
     if (key == 's') {
         bMeshSnapshot = true;
     }
+    if (key == 'r'){
+        bRainbow ^= true;
+    }
+//    if (key == 'm'){
+//        primitiveMode++;
+//        primitiveMode%=7;
+//        depthMesh.setMode(ofPrimitiveMode(primitiveMode));
+//    }
 }
 
 //--------------------------------------------------------------
