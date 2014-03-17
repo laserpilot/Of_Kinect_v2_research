@@ -53,4 +53,7 @@ public:
     int primitiveMode;
     bool bRainbow;
     
+    ofPlanePrimitive plane;
+    ofShader shader;
+    
 };

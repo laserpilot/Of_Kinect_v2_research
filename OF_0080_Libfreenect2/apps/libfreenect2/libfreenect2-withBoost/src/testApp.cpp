@@ -53,11 +53,18 @@ void testApp::setup() {
     depthMesh.enableIndices();
     
     bRainbow = false;
+    
+    plane.set(DEPTH_W, DEPTH_H, DEPTH_W, DEPTH_H);
+    plane.mapTexCoords(0, 0, 512, 424);
+    
+    shader.load("shaders/shader");
 }
 
 //--------------------------------------------------------------
 void testApp::update() {
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
+    
+    if ( ofGetFrameNum() % 60 == 0) shader.load("shaders/shader");
     
     updateKinect();
     
@@ -110,7 +117,6 @@ void testApp::update() {
                     depthMesh.addVertex(ofVec3f(x,y, r[i]*2000));
                     ofFloatColor vertexCol;
                     vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
-//                    depthMesh.addColor(vertexCol); //ofFloatColor(r[i])
                     depthMesh.addColor(bRainbow ? vertexCol : ofFloatColor(r[i]));
                 }
             }
@@ -132,8 +138,6 @@ void testApp::update() {
     
     if (bPrintImageVals) cout << r.size() << endl; bPrintImageVals = false;
     
-
-    
     //threshold image
     for(int i = 0; i < r.size(); i++){
         r[i] = (r[i] > farThreshold && r[i] < nearThreshold) ?
@@ -148,7 +152,6 @@ void testApp::update() {
         cvGrayImg = cvFloatImg;
         contours.findContours(cvGrayImg, 20, (DEPTH_W*DEPTH_H)/3, 10, true);
     }
-
 }
 
 //--------------------------------------------------------------
@@ -157,14 +160,21 @@ void testApp::draw() {
 //    tex.draw(depthFloat.getWidth() + 4, 0, 192*4, 108*4);
 //    ofSetColor(255);
 //    tex.draw(0, 0, 1920.0/1080.0*DEPTH_H, DEPTH_H);
-//    ofEnableDepthTest();
-    cam.begin();
+    ofEnableDepthTest();
+    
     ofPushMatrix();
-    ofTranslate(-DEPTH_W/2, -DEPTH_H/2, -2000);
-    depthMesh.draw();
-    ofPopMatrix();
+//    ofTranslate(-DEPTH_W/2, -DEPTH_H/2, 0);
+//    depthMesh.draw();
+    
+    shader.begin();
+    shader.setUniformTexture("tex0", depthFloat.getTextureReference(), 0);
+    cam.begin();
+    plane.draw();
     cam.end();
-//    ofDisableDepthTest();
+    shader.end();
+    ofPopMatrix();
+    
+    ofDisableDepthTest();
     
 //    depthFloat.draw(0, 0);
 //    threshFloat.draw(depthFloat.width+4, 0);
