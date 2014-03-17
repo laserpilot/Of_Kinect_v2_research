@@ -45,6 +45,9 @@ public:
     bool bIncludePixel;
     bool bBlur;
 
-//    ofMesh depthMesh;
+    ofMesh depthMesh;
+    ofEasyCam cam;
+    
+    bool bMeshSnapshot;
     
 };

@@ -38,6 +38,15 @@ void testApp::setup() {
     bThreshBool = true;
     bIncludePixel = true;
     bBlur = true;
+    
+    cam.setDistance(500);
+    
+    bMeshSnapshot = false;
+    
+    depthMesh.enableColors();
+    depthMesh.setMode(OF_PRIMITIVE_POINTS);
+    
+//    depthMesh.enableIndices();
 }
 
 //--------------------------------------------------------------
@@ -53,7 +62,6 @@ void testApp::update() {
     //the color image is 1920 X 1080; aspect ratio 1.77777777
     //the depth image is 512 X 424; aspect ratio 1.2
     
-    
     depthFloat.setFromPixels(pixDepth.getPixelsRef());
     
     // set pixels to 0.0 to 1.0 range
@@ -64,6 +72,30 @@ void testApp::update() {
         if(r[i] == 1.0) r[i] =0.0;
     }
     
+    if (r.size() > 0 && bMeshSnapshot) {
+        depthMesh.clear();
+        for(int x = 0; x < 512; x++){
+            for (int y = 0; y < 424; y++) {
+                int i = y * 512 + x;
+                depthMesh.addVertex(ofVec3f(x,y, r[i]*1000));
+                depthMesh.addColor(ofFloatColor(r[i]));
+            }
+        }
+        
+//        for (int y = 0; y<424-1; y++){
+//            for (int x=0; x<512-1; x++){
+//                depthMesh.addIndex(x+y*512);       // 0
+//                depthMesh.addIndex((x+1)+y*512);     // 1
+//                depthMesh.addIndex(x+(y+1)*512);     // 10
+//                
+//                depthMesh.addIndex((x+1)+y*512);     // 1
+//                depthMesh.addIndex((x+1)+(y+1)*512);   // 11
+//                depthMesh.addIndex(x+(y+1)*512);     // 10
+//            }
+//        }
+//        bMeshSnapshot = false;
+    }
+    /*
     if (bPrintImageVals) cout << r.size() << endl; bPrintImageVals = false;
     
     // blur image slighty by averaging pixel with neighbours
@@ -103,7 +135,7 @@ void testApp::update() {
         cvGrayImg = cvFloatImg;
         contours.findContours(cvGrayImg, 20, (512*424)/3, 10, true);
     }
-
+*/
 }
 
 //--------------------------------------------------------------
@@ -113,12 +145,19 @@ void testApp::draw() {
 //    ofSetColor(255);
 //    tex.draw(0, 0, 1920.0/1080.0*424, 424);
     
-//    ofSetColor(255, 255, 255,127);
-    depthFloat.draw(0, 0);
-    threshFloat.draw(depthFloat.width+4, 0);
-//    threshedImg.draw(0, depthFloat.height+4);
-    contours.draw((depthFloat.width+4)*2, 0);
+    cam.begin();
+    ofPushMatrix();
+    ofTranslate(-512/2, -424/2);
+    depthMesh.draw();
+    ofPopMatrix();
+    cam.end();
     
+//    depthFloat.draw(0, 0);
+//    threshFloat.draw(depthFloat.width+4, 0);
+//
+//    contours.draw((depthFloat.width+4)*2, 0);
+    
+
 //    tex.draw(0, 108*4 + 4, 192*4, 108*4);
 }
 
@@ -147,6 +186,9 @@ void testApp::keyPressed (int key) {
     }
     if (key == 'b') {
         bBlur ^= true;
+    }
+    if (key == 's') {
+        bMeshSnapshot = true;
     }
 }
 
