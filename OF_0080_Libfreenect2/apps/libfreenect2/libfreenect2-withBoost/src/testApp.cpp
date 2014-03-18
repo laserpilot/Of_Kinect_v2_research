@@ -1,5 +1,6 @@
 #include "testApp.h"
 #include "ofxOpenCv.h"
+#include "computeStats.h"
 
 
 
@@ -13,6 +14,8 @@ const int SENSOR_H = 1080;
 const int DEPTH_W = 512;
 const int DEPTH_H = 424;
 
+//the color image is 1920 X 1080; aspect ratio 1.77777777
+//the depth image is 512 X 424; aspect ratio 1.2
 
 extern void updateKinect();
 extern void closeKinect();
@@ -60,6 +63,8 @@ void testApp::setup() {
     bDropPix = false;
     bUseNoiseReduced = false;
     
+    numPastDepth = 3;
+//    pastDepthPix.assign(numPastDepth, ofFloatPixels());
 //    lastDepthFloat.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
 }
 
@@ -67,24 +72,17 @@ void testApp::setup() {
 void testApp::update() {
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
-    if ( ofGetFrameNum() % 60 == 0) shader.load("shadersGL3/shader");
-    
-    
-    
+//    if ( ofGetFrameNum() % 60 == 0) shader.load("shadersGL3/shader");
+
     updateKinect();
     
     if(pix.getWidth()){
         tex.loadData(pix);
     }
     
-    
-    //the color image is 1920 X 1080; aspect ratio 1.77777777
-    //the depth image is 512 X 424; aspect ratio 1.2
-
     depthFloat.setFromPixels(pixDepth.getPixelsRef());
     
     // set pixels to 0.0 to 1.0 range
-
     ofFloatPixelsRef r = depthFloat.getPixelsRef();
     for(int i = 0; i < r.size(); i++){
         r[i] /= 10000.0;
@@ -114,7 +112,7 @@ void testApp::update() {
     }
     
     depthFloat.setFromPixels(r);
-    
+    /*
     if (r.size() > 0 && lastDepthFloat.isAllocated()) {
         ofFloatPixelsRef lastR = lastDepthFloat.getPixelsRef();
         ofFloatPixels velR; velR.allocate(lastR.getWidth(), lastR.getHeight(), OF_PIXELS_MONO);
@@ -126,8 +124,6 @@ void testApp::update() {
             noiseReduceR[i] = velR[i] < 0.003 ? r[i] : (bDropPix ? 0.0 : (r[i] + lastR[i])/2);
         }
 
-        
-        
         if (zeroCount != velR.size()) {
             velFloat.setFromPixels(velR);
             noiseReducedFloat.setFromPixels(noiseReduceR);
@@ -138,7 +134,51 @@ void testApp::update() {
     }
     
     
-    lastDepthFloat = depthFloat;
+    lastDepthFloat = depthFloat;*/
+    
+    if (r.size() > 0) {
+        if (pastDepthPix.size() > 0) {
+            ofFloatPixels stdDevR;
+            stdDevR.allocate(DEPTH_W, DEPTH_H, 1);
+            ofFloatPixels noiseReduceR;
+            noiseReduceR.allocate(DEPTH_W, DEPTH_H, 1);
+            
+            int zeroCount = 0;
+            float max = 0.0;
+            for(int i = 0; i < r.size(); i++){
+                vector<float> pixPast;
+                float sum = 0.0;
+                for (int j = 0; j < pastDepthPix.size(); j++) {
+                    pixPast.push_back(pastDepthPix[j][i]);
+                    sum += pastDepthPix[j][i];
+                }
+                float mean = sum / pastDepthPix.size();
+                stdDevR[i] = computeStdDev(pixPast.begin(), pixPast.end(), mean);
+                
+                if (stdDevR[i] == 0) zeroCount++;
+                if (stdDevR[i] > max) max = stdDevR[i];
+                
+                noiseReduceR[i] = stdDevR[i] < 0.001 ? r[i] : (bDropPix ? 0.0 : mean);
+            }
+            
+            cout << "MAX STDEV = " << max << endl;
+            
+            if (zeroCount != stdDevR.size()) {
+                stdDevFloat.setFromPixels(stdDevR);
+                noiseReducedFloat.setFromPixels(noiseReduceR);
+            }
+        }
+        
+        pastDepthPix.push_back(r);
+        if (pastDepthPix.size() > numPastDepth) {
+            pastDepthPix.erase(pastDepthPix.begin());
+        }
+        
+//        pastDepthFloats.push_back(depthFloat);
+//        if (pastDepthFloats.size() > numPastDepth) {
+//            pastDepthFloats.erase(pastDepthFloats.begin());
+//        }
+    }
 
     /*
     //threshold image
@@ -201,7 +241,8 @@ void testApp::draw() {
     ofDisableDepthTest();
     
     depthFloat.draw(0, 0);
-    velFloat.draw(depthFloat.width+4, 0);
+    stdDevFloat.draw(depthFloat.width+4, 0);
+//    velFloat.draw(depthFloat.width+4, 0);
     noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
 //    threshFloat.draw(depthFloat.width+4, 0);
 //

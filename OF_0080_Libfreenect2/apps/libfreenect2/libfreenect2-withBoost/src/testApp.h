@@ -29,7 +29,12 @@ public:
 	
 	threadedKinect tKinect;
     ofFloatImage depthFloat, threshFloat, lastDepthFloat;
-    ofFloatImage velFloat, lastVelFloat;
+    vector<ofFloatImage> pastDepthFloats;
+    vector<ofFloatPixels> pastDepthPix;
+    int numPastDepth;
+    
+
+    ofFloatImage velFloat, lastVelFloat, stdDevFloat;
     ofFloatImage noiseReducedFloat, lastNoiseReducedFloat;
     
     float nearThreshold, farThreshold;
