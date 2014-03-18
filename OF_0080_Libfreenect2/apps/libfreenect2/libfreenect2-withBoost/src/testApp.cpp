@@ -57,14 +57,14 @@ void testApp::setup() {
     plane.set(DEPTH_W, DEPTH_H, DEPTH_W, DEPTH_H);
     plane.mapTexCoords(0, 0, 512, 424);
     
-    shader.load("shaders/shader");
+    shader.load("shadersGL3/shader");
 }
 
 //--------------------------------------------------------------
 void testApp::update() {
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
-    if ( ofGetFrameNum() % 60 == 0) shader.load("shaders/shader");
+    if ( ofGetFrameNum() % 60 == 0) shader.load("shadersGL3/shader");
     
     updateKinect();
     
