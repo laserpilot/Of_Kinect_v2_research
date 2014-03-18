@@ -1,15 +1,15 @@
 dependencies: \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworks/app/ofAppRunner.cpp \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworks/app/ofAppRunner.cpp \
   ../../../../libs/openFrameworks/app/ofAppRunner.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofConstants.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofConstants.h \
   ../../../../libs/glew/include/GL/glew.h \
   ../../../../libs/tess2/include/tesselator.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofPoint.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofVec3f.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofPoint.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofVec3f.h \
   ../../../../libs/openFrameworks/math/ofVec2f.h \
   ../../../../libs/openFrameworks/math/ofVec4f.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofRectangle.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofLog.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofRectangle.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofLog.h \
   ../../../../libs/openFrameworks/utils/ofFileUtils.h \
   ../../../../libs/poco/include/Poco/File.h \
   ../../../../libs/poco/include/Poco/Foundation.h \
@@ -20,15 +20,15 @@ dependencies: \
   ../../../../libs/poco/include/Poco/Types.h \
   ../../../../libs/poco/include/Poco/Timestamp.h \
   ../../../../libs/poco/include/Poco/File_UNIX.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofTypes.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofTypes.h \
   ../../../../libs/openFrameworks/types/ofColor.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMath.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMath.h \
   ../../../../libs/poco/include/Poco/Mutex.h \
   ../../../../libs/poco/include/Poco/Exception.h \
   ../../../../libs/poco/include/Poco/ScopedLock.h \
   ../../../../libs/poco/include/Poco/Mutex_POSIX.h \
   ../../../../libs/openFrameworks/app/ofBaseApp.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworks/events/ofEvents.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworks/events/ofEvents.h \
   ../../../../libs/openFrameworks/events/ofEventUtils.h \
   ../../../../libs/poco/include/Poco/PriorityEvent.h \
   ../../../../libs/poco/include/Poco/AbstractEvent.h \
@@ -56,16 +56,16 @@ dependencies: \
   ../../../../libs/poco/include/Poco/PriorityExpire.h \
   ../../../../libs/poco/include/Poco/FunctionPriorityDelegate.h \
   ../../../../libs/openFrameworks/events/ofDelegate.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofBaseTypes.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/3d/ofMesh.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofBaseTypes.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/3d/ofMesh.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofUtils.h \
   ../../../../libs/poco/include/Poco/Path.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLUtils.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPixels.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMatrix4x4.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPixels.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMatrix4x4.h \
   ../../../../libs/openFrameworks/math/ofQuaternion.h \
   ../../../../libs/openFrameworks/app/ofAppBaseWindow.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/sound/ofSoundPlayer.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/sound/ofSoundPlayer.h \
   ../../../../libs/openFrameworks/sound/ofBaseSoundPlayer.h \
   ../../../../libs/openFrameworks/sound/ofFmodSoundPlayer.h \
   ../../../../libs/fmodex/include/fmod.h \
@@ -73,23 +73,23 @@ dependencies: \
   ../../../../libs/fmodex/include/fmod_dsp.h \
   ../../../../libs/fmodex/include/fmod_memoryinfo.h \
   ../../../../libs/fmodex/include/fmod_errors.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/sound/ofSoundStream.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/sound/ofSoundStream.h \
   ../../../../libs/openFrameworks/sound/ofBaseSoundStream.h \
   ../../../../libs/openFrameworks/sound/ofRtAudioSoundStream.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofImage.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofTexture.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofImage.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofTexture.h \
   ../../../../libs/openFrameworks/gl/ofVboMesh.h \
   ../../../../libs/openFrameworks/gl/ofVbo.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofGraphics.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLRenderer.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPolyline.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofMatrixStack.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLProgrammableRenderer.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofGraphics.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLRenderer.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPolyline.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofMatrixStack.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLProgrammableRenderer.h \
   ../../../../libs/openFrameworks/gl/ofShader.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofTrueTypeFont.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofTrueTypeFont.h \
   ../../../../libs/openFrameworks/graphics/ofPath.h \
   ../../../../libs/openFrameworks/graphics/ofTessellator.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofURLFileLoader.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofURLFileLoader.h \
   ../../../../libs/openFrameworks/utils/ofThread.h \
   ../../../../libs/poco/include/Poco/Condition.h \
   ../../../../libs/poco/include/Poco/ScopedUnlock.h \
@@ -116,6 +116,6 @@ dependencies: \
   ../../../../libs/poco/include/Poco/Util/Util.h \
   ../../../../libs/poco/include/Poco/BasicEvent.h \
   ../../../../libs/poco/include/Poco/DefaultStrategy.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworks/video/ofQtUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworks/video/ofQtUtils.h \
   ../../../../libs/openFrameworks/app/ofAppGLFWWindow.h \
   ../../../../libs/glfw/include/GLFW/glfw3.h

@@ -40,7 +40,7 @@ void testApp::setup() {
     
     bThreshBool = true;
     bIncludePixel = true;
-    bBlur = true;
+    bBlur = false;
     
     cam.setDistance(500);
     
@@ -54,10 +54,14 @@ void testApp::setup() {
     
     bRainbow = false;
     
-    plane.set(DEPTH_W, DEPTH_H, DEPTH_W, DEPTH_H);
-    plane.mapTexCoords(0, 0, 512, 424);
-    
+    plane.set(DEPTH_W, DEPTH_H, DEPTH_W/2, DEPTH_H/2);
+    plane.mapTexCoords(0, 0, DEPTH_W, DEPTH_H);
+
     shader.load("shadersGL3/shader");
+    
+    bDrawMesh = false;
+    
+    mode = 0;
 }
 
 //--------------------------------------------------------------
@@ -108,20 +112,20 @@ void testApp::update() {
     
     depthFloat.setFromPixels(r);
     
-    if (r.size() > 0 && bMeshSnapshot) {
-        depthMesh.clear();
-        for(int x = 0; x < DEPTH_W; x++){
-            for (int y = 0; y < DEPTH_H; y++) {
-                int i = y * DEPTH_W + x;
-                if (r[i] > 0.0) {
-                    depthMesh.addVertex(ofVec3f(x,y, r[i]*2000));
-                    ofFloatColor vertexCol;
-                    vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
-                    depthMesh.addColor(bRainbow ? vertexCol : ofFloatColor(r[i]));
-                }
-            }
-        }
-        
+//    if (r.size() > 0) {
+//        depthMesh.clear();
+//        for(int x = 0; x < DEPTH_W; x++){
+//            for (int y = 0; y < DEPTH_H; y++) {
+//                int i = y * DEPTH_W + x;
+//                if (r[i] > 0.0) {
+//                    depthMesh.addVertex(ofVec3f(x,y, r[i]*1000));
+//                    ofFloatColor vertexCol;
+//                    vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
+//                    depthMesh.addColor(bRainbow ? vertexCol : ofFloatColor(r[i]));
+//                }
+//            }
+//        }
+//        
 //        for (int y = 0; y<DEPTH_H-1; y++){
 //            for (int x=0; x<DEPTH_W-1; x++){
 //                depthMesh.addIndex(x+y*DEPTH_W);       // 0
@@ -134,10 +138,11 @@ void testApp::update() {
 //            }
 //        }
 //        bMeshSnapshot = false;
-    }
+//    }
     
     if (bPrintImageVals) cout << r.size() << endl; bPrintImageVals = false;
     
+    /*
     //threshold image
     for(int i = 0; i < r.size(); i++){
         r[i] = (r[i] > farThreshold && r[i] < nearThreshold) ?
@@ -152,6 +157,7 @@ void testApp::update() {
         cvGrayImg = cvFloatImg;
         contours.findContours(cvGrayImg, 20, (DEPTH_W*DEPTH_H)/3, 10, true);
     }
+     */
 }
 
 //--------------------------------------------------------------
@@ -160,23 +166,46 @@ void testApp::draw() {
 //    tex.draw(depthFloat.getWidth() + 4, 0, 192*4, 108*4);
 //    ofSetColor(255);
 //    tex.draw(0, 0, 1920.0/1080.0*DEPTH_H, DEPTH_H);
-    ofEnableDepthTest();
     
-    ofPushMatrix();
-//    ofTranslate(-DEPTH_W/2, -DEPTH_H/2, 0);
-//    depthMesh.draw();
+    ofEnableDepthTest();
     
     shader.begin();
     shader.setUniformTexture("tex0", depthFloat.getTextureReference(), 0);
-    cam.begin();
-    plane.draw();
-    cam.end();
+    {
+        cam.begin();
+        {
+            ofPushMatrix();
+            ofRotateZ(180);
+            ofTranslate(0, 0, -1000);
+            {
+                switch (mode) {
+                    case 0:
+                        plane.draw();
+                        break;
+                        
+                    case 1:
+                        plane.drawWireframe();
+                        break;
+                        
+                    case 2:
+                        plane.drawVertices();
+                        break;
+                        
+                    default:
+                        break;
+                }
+                
+            }
+            ofPopMatrix();
+        }
+        cam.end();
+    }
     shader.end();
-    ofPopMatrix();
     
     ofDisableDepthTest();
     
-//    depthFloat.draw(0, 0);
+
+    depthFloat.draw(0, 0);
 //    threshFloat.draw(depthFloat.width+4, 0);
 //
 //    contours.draw((depthFloat.width+4)*2, 0);
@@ -217,11 +246,10 @@ void testApp::keyPressed (int key) {
     if (key == 'r'){
         bRainbow ^= true;
     }
-//    if (key == 'm'){
-//        primitiveMode++;
-//        primitiveMode%=7;
-//        depthMesh.setMode(ofPrimitiveMode(primitiveMode));
-//    }
+    if (key == 'm') {
+        mode = (mode+1)%3;
+    }
+
 }
 
 //--------------------------------------------------------------
@@ -229,7 +257,6 @@ void testApp::mouseDragged(int x, int y, int button)
 {
     nearThreshold = ofMap(x, 0, ofGetWidth(), 0.0, 1.0);
     farThreshold = ofMap(y, 0, ofGetHeight(), 0.0, 1.0);
-
 }
 
 //--------------------------------------------------------------

@@ -1,17 +1,17 @@
 dependencies: \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworks/graphics/ofTessellator.cpp \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworks/graphics/ofTessellator.cpp \
   ../../../../libs/openFrameworks/graphics/ofTessellator.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofConstants.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofConstants.h \
   ../../../../libs/glew/include/GL/glew.h \
   ../../../../libs/tess2/include/tesselator.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/3d/ofMesh.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofVec3f.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/3d/ofMesh.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofVec3f.h \
   ../../../../libs/openFrameworks/math/ofVec2f.h \
   ../../../../libs/openFrameworks/math/ofVec4f.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofColor.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMath.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofPoint.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofColor.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMath.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofPoint.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofUtils.h \
   ../../../../libs/openFrameworks/utils/ofLog.h \
   ../../../../libs/openFrameworks/utils/ofFileUtils.h \
   ../../../../libs/poco/include/Poco/File.h \
@@ -23,13 +23,13 @@ dependencies: \
   ../../../../libs/poco/include/Poco/Types.h \
   ../../../../libs/poco/include/Poco/Timestamp.h \
   ../../../../libs/poco/include/Poco/File_UNIX.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofTypes.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofTypes.h \
   ../../../../libs/poco/include/Poco/Mutex.h \
   ../../../../libs/poco/include/Poco/Exception.h \
   ../../../../libs/poco/include/Poco/ScopedLock.h \
   ../../../../libs/poco/include/Poco/Mutex_POSIX.h \
   ../../../../libs/poco/include/Poco/Path.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLUtils.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPixels.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPixels.h \
   ../../../../libs/openFrameworks/graphics/ofPolyline.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofRectangle.h
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofRectangle.h

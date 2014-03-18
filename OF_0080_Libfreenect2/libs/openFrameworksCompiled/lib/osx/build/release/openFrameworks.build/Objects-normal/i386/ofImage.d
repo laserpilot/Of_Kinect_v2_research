@@ -1,7 +1,7 @@
 dependencies: \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworks/graphics/ofImage.cpp \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworks/graphics/ofImage.cpp \
   ../../../../libs/openFrameworks/graphics/ofImage.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofFileUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofFileUtils.h \
   ../../../../libs/openFrameworks/utils/ofConstants.h \
   ../../../../libs/glew/include/GL/glew.h \
   ../../../../libs/tess2/include/tesselator.h \
@@ -14,32 +14,32 @@ dependencies: \
   ../../../../libs/poco/include/Poco/Types.h \
   ../../../../libs/poco/include/Poco/Timestamp.h \
   ../../../../libs/poco/include/Poco/File_UNIX.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofTexture.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofPoint.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofVec3f.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofTexture.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofPoint.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofVec3f.h \
   ../../../../libs/openFrameworks/math/ofVec2f.h \
   ../../../../libs/openFrameworks/math/ofVec4f.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofRectangle.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofLog.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofTypes.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofRectangle.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofLog.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofTypes.h \
   ../../../../libs/openFrameworks/types/ofColor.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMath.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMath.h \
   ../../../../libs/poco/include/Poco/Mutex.h \
   ../../../../libs/poco/include/Poco/Exception.h \
   ../../../../libs/poco/include/Poco/ScopedLock.h \
   ../../../../libs/poco/include/Poco/Mutex_POSIX.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofBaseTypes.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/3d/ofMesh.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/types/ofBaseTypes.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/3d/ofMesh.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofUtils.h \
   ../../../../libs/poco/include/Poco/Path.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLUtils.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPixels.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMatrix4x4.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/gl/ofGLUtils.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/graphics/ofPixels.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/math/ofMatrix4x4.h \
   ../../../../libs/openFrameworks/math/ofQuaternion.h \
   ../../../../libs/openFrameworks/gl/ofVboMesh.h \
   ../../../../libs/openFrameworks/gl/ofVbo.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworks/app/ofAppRunner.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofURLFileLoader.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworks/app/ofAppRunner.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworksCompiled/project/osx/../../../openFrameworks/utils/ofURLFileLoader.h \
   ../../../../libs/openFrameworks/utils/ofThread.h \
   ../../../../libs/poco/include/Poco/Thread.h \
   ../../../../libs/poco/include/Poco/Thread_POSIX.h \
@@ -50,7 +50,7 @@ dependencies: \
   ../../../../libs/poco/include/Poco/RefCountedObject.h \
   ../../../../libs/poco/include/Poco/AtomicCounter.h \
   ../../../../libs/poco/include/Poco/AutoPtr.h \
-  /Users/fakelove/Downloads/OF_0080_Libfreenect2/libs/openFrameworks/events/ofEvents.h \
+  /Users/fakelove/Documents/Of_Kinect_v2_research/OF_0080_Libfreenect2/libs/openFrameworks/events/ofEvents.h \
   ../../../../libs/openFrameworks/events/ofEventUtils.h \
   ../../../../libs/poco/include/Poco/PriorityEvent.h \
   ../../../../libs/poco/include/Poco/AbstractEvent.h \

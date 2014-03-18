@@ -27,7 +27,7 @@ void main()
 	modifiedPosition.z += displacementY * scale;
 	
     // this is the resulting vertex position
-    gl_Position =modelViewProjectionMatrix * modifiedPosition;
+    gl_Position = modelViewProjectionMatrix * modifiedPosition;
 
     // pass the texture coordinates to the fragment shader
     texCoordVarying = texcoord;

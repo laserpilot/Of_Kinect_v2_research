@@ -56,4 +56,7 @@ public:
     ofPlanePrimitive plane;
     ofShader shader;
     
+    bool bDrawMesh;
+    
+    int mode;
 };
