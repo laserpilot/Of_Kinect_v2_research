@@ -28,7 +28,9 @@ public:
 	void windowResized(int w, int h);
 	
 	threadedKinect tKinect;
-    ofFloatImage depthFloat, threshFloat, lastDepthFloat, velFloat, noiseReducedFloat, lastNoiseReducedFloat;
+    ofFloatImage depthFloat, threshFloat, lastDepthFloat;
+    ofFloatImage velFloat, lastVelFloat;
+    ofFloatImage noiseReducedFloat, lastNoiseReducedFloat;
     
     float nearThreshold, farThreshold;
     
@@ -59,4 +61,7 @@ public:
     bool bDrawMesh;
     
     int mode;
+    
+    bool bDropPix;
+    bool bUseNoiseReduced;
 };

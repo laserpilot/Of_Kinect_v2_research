@@ -57,6 +57,9 @@ void testApp::setup() {
     
     mode = 0;
     
+    bDropPix = false;
+    bUseNoiseReduced = false;
+    
 //    lastDepthFloat.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
 }
 
@@ -120,15 +123,18 @@ void testApp::update() {
         for(int i = 0; i < r.size(); i++){
             velR[i] = abs(r[i] - lastR[i]);
             if (velR[i] == 0) zeroCount++;
-            noiseReduceR[i] = velR[i] < 0.003 ? r[i] : (r[i] + lastR[i])/2;
+            noiseReduceR[i] = velR[i] < 0.003 ? r[i] : (bDropPix ? 0.0 : (r[i] + lastR[i])/2);
         }
 
         
-        velFloat.setFromPixels(velR);
-        if (zeroCount == velR.size()) lastNoiseReducedFloat.setFromPixels(r);
-        else noiseReducedFloat.setFromPixels(noiseReduceR);
+        
+        if (zeroCount != velR.size()) {
+            velFloat.setFromPixels(velR);
+            noiseReducedFloat.setFromPixels(noiseReduceR);
+        }
         
         lastNoiseReducedFloat = noiseReducedFloat;
+        lastVelFloat = velFloat;
     }
     
     
@@ -154,17 +160,19 @@ void testApp::update() {
 
 //--------------------------------------------------------------
 void testApp::draw() {
-    /*
+    
     ofEnableDepthTest();
     
+    ofTexture depthMap = bUseNoiseReduced ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
+    
     shader.begin();
-    shader.setUniformTexture("tex0", depthFloat.getTextureReference(), 0);
+    shader.setUniformTexture("tex0", depthMap, 0);
     {
         cam.begin();
         {
             ofPushMatrix();
             ofRotateZ(180);
-            ofTranslate(0, 0, -1000);
+            ofTranslate(0,  150, -1000);
             {
                 switch (mode) {
                     case 0:
@@ -190,7 +198,7 @@ void testApp::draw() {
     }
     shader.end();
     
-    ofDisableDepthTest();*/
+    ofDisableDepthTest();
     
     depthFloat.draw(0, 0);
     velFloat.draw(depthFloat.width+4, 0);
@@ -234,6 +242,12 @@ void testApp::keyPressed (int key) {
     }
     if (key == 'm') {
         mode = (mode+1)%3;
+    }
+    if (key == 'p') {
+        bDropPix ^= true;
+    }
+    if (key == 'n') {
+        bUseNoiseReduced ^= true;
     }
 
 }
