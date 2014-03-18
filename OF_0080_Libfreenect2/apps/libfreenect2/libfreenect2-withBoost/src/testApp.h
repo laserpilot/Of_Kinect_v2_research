@@ -28,7 +28,7 @@ public:
 	void windowResized(int w, int h);
 	
 	threadedKinect tKinect;
-    ofFloatImage depthFloat, threshFloat;
+    ofFloatImage depthFloat, threshFloat, lastDepthFloat, velFloat, noiseReducedFloat, lastNoiseReducedFloat;
     
     float nearThreshold, farThreshold;
     
@@ -45,13 +45,13 @@ public:
     bool bIncludePixel;
     bool bBlur;
 
-    ofMesh depthMesh;
+//    ofMesh depthMesh;
     ofEasyCam cam;
     
     bool bMeshSnapshot;
     
-    int primitiveMode;
-    bool bRainbow;
+//    int primitiveMode;
+//    bool bRainbow;
     
     ofPlanePrimitive plane;
     ofShader shader;

@@ -23,7 +23,7 @@ void testApp::setup() {
 	ofSetLogLevel(OF_LOG_VERBOSE);
 //    ofSetLogLevel(OF_LOG_SILENT);
 
-	ofSetFrameRate(60);
+	ofSetFrameRate(30);
     ofBackground(20, 20, 20);
     
     runKinect2(ofToDataPath(""));
@@ -46,13 +46,7 @@ void testApp::setup() {
     
     bMeshSnapshot = false;
     
-    depthMesh.enableColors();
-    depthMesh.setMode(OF_PRIMITIVE_POINTS);
-    
-    primitiveMode = 0;
-    depthMesh.enableIndices();
-    
-    bRainbow = false;
+
     
     plane.set(DEPTH_W, DEPTH_H, DEPTH_W/2, DEPTH_H/2);
     plane.mapTexCoords(0, 0, DEPTH_W, DEPTH_H);
@@ -62,6 +56,8 @@ void testApp::setup() {
     bDrawMesh = false;
     
     mode = 0;
+    
+//    lastDepthFloat.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
 }
 
 //--------------------------------------------------------------
@@ -70,18 +66,22 @@ void testApp::update() {
     
     if ( ofGetFrameNum() % 60 == 0) shader.load("shadersGL3/shader");
     
+    
+    
     updateKinect();
     
     if(pix.getWidth()){
         tex.loadData(pix);
     }
     
+    
     //the color image is 1920 X 1080; aspect ratio 1.77777777
     //the depth image is 512 X 424; aspect ratio 1.2
-    
+
     depthFloat.setFromPixels(pixDepth.getPixelsRef());
     
     // set pixels to 0.0 to 1.0 range
+
     ofFloatPixelsRef r = depthFloat.getPixelsRef();
     for(int i = 0; i < r.size(); i++){
         r[i] /= 10000.0;
@@ -112,36 +112,28 @@ void testApp::update() {
     
     depthFloat.setFromPixels(r);
     
-//    if (r.size() > 0) {
-//        depthMesh.clear();
-//        for(int x = 0; x < DEPTH_W; x++){
-//            for (int y = 0; y < DEPTH_H; y++) {
-//                int i = y * DEPTH_W + x;
-//                if (r[i] > 0.0) {
-//                    depthMesh.addVertex(ofVec3f(x,y, r[i]*1000));
-//                    ofFloatColor vertexCol;
-//                    vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
-//                    depthMesh.addColor(bRainbow ? vertexCol : ofFloatColor(r[i]));
-//                }
-//            }
-//        }
-//        
-//        for (int y = 0; y<DEPTH_H-1; y++){
-//            for (int x=0; x<DEPTH_W-1; x++){
-//                depthMesh.addIndex(x+y*DEPTH_W);       // 0
-//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
-//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
-//                
-//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
-//                depthMesh.addIndex((x+1)+(y+1)*DEPTH_W);   // 11
-//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
-//            }
-//        }
-//        bMeshSnapshot = false;
-//    }
+    if (r.size() > 0 && lastDepthFloat.isAllocated()) {
+        ofFloatPixelsRef lastR = lastDepthFloat.getPixelsRef();
+        ofFloatPixels velR; velR.allocate(lastR.getWidth(), lastR.getHeight(), OF_PIXELS_MONO);
+        ofFloatPixels noiseReduceR; noiseReduceR.allocate(lastR.getWidth(), lastR.getHeight(), OF_PIXELS_MONO);
+        int zeroCount = 0;
+        for(int i = 0; i < r.size(); i++){
+            velR[i] = abs(r[i] - lastR[i]);
+            if (velR[i] == 0) zeroCount++;
+            noiseReduceR[i] = velR[i] < 0.003 ? r[i] : (r[i] + lastR[i])/2;
+        }
+
+        
+        velFloat.setFromPixels(velR);
+        if (zeroCount == velR.size()) lastNoiseReducedFloat.setFromPixels(r);
+        else noiseReducedFloat.setFromPixels(noiseReduceR);
+        
+        lastNoiseReducedFloat = noiseReducedFloat;
+    }
     
-    if (bPrintImageVals) cout << r.size() << endl; bPrintImageVals = false;
     
+    lastDepthFloat = depthFloat;
+
     /*
     //threshold image
     for(int i = 0; i < r.size(); i++){
@@ -162,11 +154,7 @@ void testApp::update() {
 
 //--------------------------------------------------------------
 void testApp::draw() {
-
-//    tex.draw(depthFloat.getWidth() + 4, 0, 192*4, 108*4);
-//    ofSetColor(255);
-//    tex.draw(0, 0, 1920.0/1080.0*DEPTH_H, DEPTH_H);
-    
+    /*
     ofEnableDepthTest();
     
     shader.begin();
@@ -202,16 +190,17 @@ void testApp::draw() {
     }
     shader.end();
     
-    ofDisableDepthTest();
+    ofDisableDepthTest();*/
     
-
     depthFloat.draw(0, 0);
+    velFloat.draw(depthFloat.width+4, 0);
+    noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
 //    threshFloat.draw(depthFloat.width+4, 0);
 //
 //    contours.draw((depthFloat.width+4)*2, 0);
     
 
-//    tex.draw(0, 108*4 + 4, 192*4, 108*4);
+//    tex.draw(0, 0, 1920.0/1080.0*DEPTH_H, DEPTH_H);
 }
 
 
@@ -243,9 +232,6 @@ void testApp::keyPressed (int key) {
     if (key == 's') {
         bMeshSnapshot = true;
     }
-    if (key == 'r'){
-        bRainbow ^= true;
-    }
     if (key == 'm') {
         mode = (mode+1)%3;
     }
@@ -270,3 +256,40 @@ void testApp::mouseReleased(int x, int y, int button)
 //--------------------------------------------------------------
 void testApp::windowResized(int w, int h)
 {}
+
+
+//    depthMesh.enableColors();
+//    depthMesh.setMode(OF_PRIMITIVE_POINTS);
+//
+//    primitiveMode = 0;
+//    depthMesh.enableIndices();
+//
+//    bRainbow = false;
+
+//    if (r.size() > 0) {
+//        depthMesh.clear();
+//        for(int x = 0; x < DEPTH_W; x++){
+//            for (int y = 0; y < DEPTH_H; y++) {
+//                int i = y * DEPTH_W + x;
+//                if (r[i] > 0.0) {
+//                    depthMesh.addVertex(ofVec3f(x,y, r[i]*1000));
+//                    ofFloatColor vertexCol;
+//                    vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
+//                    depthMesh.addColor(bRainbow ? vertexCol : ofFloatColor(r[i]));
+//                }
+//            }
+//        }
+//
+//        for (int y = 0; y<DEPTH_H-1; y++){
+//            for (int x=0; x<DEPTH_W-1; x++){
+//                depthMesh.addIndex(x+y*DEPTH_W);       // 0
+//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
+//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
+//
+//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
+//                depthMesh.addIndex((x+1)+(y+1)*DEPTH_W);   // 11
+//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
+//            }
+//        }
+//        bMeshSnapshot = false;
+//    }
