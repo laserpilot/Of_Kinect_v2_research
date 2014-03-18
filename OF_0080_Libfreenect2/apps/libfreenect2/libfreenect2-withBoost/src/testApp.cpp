@@ -43,13 +43,11 @@ void testApp::setup() {
     
     bThreshBool = true;
     bIncludePixel = true;
-    bBlur = false;
+    bMean = bMedian = false;
     
     cam.setDistance(500);
     
     bMeshSnapshot = false;
-    
-
     
     plane.set(DEPTH_W, DEPTH_H, DEPTH_W/2, DEPTH_H/2);
     plane.mapTexCoords(0, 0, DEPTH_W, DEPTH_H);
@@ -64,8 +62,11 @@ void testApp::setup() {
     bUseNoiseReduced = false;
     
     numPastDepth = 3;
+    stdDevThresh = 0.003;
 //    pastDepthPix.assign(numPastDepth, ofFloatPixels());
 //    lastDepthFloat.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
+    
+    setupGUI();
 }
 
 //--------------------------------------------------------------
@@ -81,34 +82,17 @@ void testApp::update() {
     }
     
     depthFloat.setFromPixels(pixDepth.getPixelsRef());
-    
-    // set pixels to 0.0 to 1.0 range
     ofFloatPixelsRef r = depthFloat.getPixelsRef();
-    for(int i = 0; i < r.size(); i++){
-        r[i] /= 10000.0;
-        r[i] = ofClamp(1.0-r[i], 0, 1);
-        if(r[i] == 1.0) r[i] =0.0;
+    
+    scaleVals(r);
+    threshHold(r);
+    
+    if (bMean) {
+        meanFilter(r);
     }
     
-    // blur image slighty by averaging pixel with neighbours
-    if (bBlur) {
-        ofFloatPixelsRef temp = depthFloat.getPixelsRef();
-        
-        if (temp.size() > 0) {
-            for(int x = 1; x < DEPTH_W-1; x++){
-                for (int y = 1; y < DEPTH_H-1; y++) {
-                    int i = y * DEPTH_W + x;
-                    int top = (y-1) * DEPTH_W + x;
-                    int bottom = (y+1) * DEPTH_W + x;
-                    int left = y * DEPTH_W + (x-1);
-                    int right = y * DEPTH_W + (x+1);
-                    
-                    r[i] = bIncludePixel ?
-                    (temp[i] + temp[top] + temp[bottom] + temp[left] + temp[right]) * 0.20
-                    : (temp[top] + temp[bottom] + temp[left] + temp[right]) * 0.25;
-                }
-            }
-        }
+    if (bMedian) {
+        medianFilter(r);
     }
     
     depthFloat.setFromPixels(r);
@@ -136,66 +120,16 @@ void testApp::update() {
     
     lastDepthFloat = depthFloat;*/
     
-    if (r.size() > 0) {
-        if (pastDepthPix.size() > 0) {
-            ofFloatPixels stdDevR;
-            stdDevR.allocate(DEPTH_W, DEPTH_H, 1);
-            ofFloatPixels noiseReduceR;
-            noiseReduceR.allocate(DEPTH_W, DEPTH_H, 1);
-            
-            int zeroCount = 0;
-            float max = 0.0;
-            for(int i = 0; i < r.size(); i++){
-                vector<float> pixPast;
-                float sum = 0.0;
-                for (int j = 0; j < pastDepthPix.size(); j++) {
-                    pixPast.push_back(pastDepthPix[j][i]);
-                    sum += pastDepthPix[j][i];
-                }
-                float mean = sum / pastDepthPix.size();
-                stdDevR[i] = computeStdDev(pixPast.begin(), pixPast.end(), mean);
-                
-                if (stdDevR[i] == 0) zeroCount++;
-                if (stdDevR[i] > max) max = stdDevR[i];
-                
-                noiseReduceR[i] = stdDevR[i] < 0.001 ? r[i] : (bDropPix ? 0.0 : mean);
-            }
-            
-            cout << "MAX STDEV = " << max << endl;
-            
-            if (zeroCount != stdDevR.size()) {
-                stdDevFloat.setFromPixels(stdDevR);
-                noiseReducedFloat.setFromPixels(noiseReduceR);
-            }
-        }
-        
-        pastDepthPix.push_back(r);
-        if (pastDepthPix.size() > numPastDepth) {
-            pastDepthPix.erase(pastDepthPix.begin());
-        }
-        
-//        pastDepthFloats.push_back(depthFloat);
-//        if (pastDepthFloats.size() > numPastDepth) {
-//            pastDepthFloats.erase(pastDepthFloats.begin());
-//        }
+    if (bUseStdDev ) {
+        stdDevFilter(r);
     }
-
-    /*
-    //threshold image
-    for(int i = 0; i < r.size(); i++){
-        r[i] = (r[i] > farThreshold && r[i] < nearThreshold) ?
-        (bThreshBool ? 1.0 : r[i])
-        : 0.0;
-    }
-    
-    threshFloat.setFromPixels(r);
    
-    if (r.size() > 0) {
-        cvFloatImg.setFromPixels(r);
-        cvGrayImg = cvFloatImg;
-        contours.findContours(cvGrayImg, 20, (DEPTH_W*DEPTH_H)/3, 10, true);
-    }
-     */
+//    if (r.size() > 0) {
+//        cvFloatImg.setFromPixels(r);
+//        cvGrayImg = cvFloatImg;
+//        contours.findContours(cvGrayImg, 20, (DEPTH_W*DEPTH_H)/3, 10, true);
+//    }
+
 }
 
 //--------------------------------------------------------------
@@ -203,7 +137,7 @@ void testApp::draw() {
     
     ofEnableDepthTest();
     
-    ofTexture depthMap = bUseNoiseReduced ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
+    ofTexture depthMap = bUseStdDev ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
     
     shader.begin();
     shader.setUniformTexture("tex0", depthMap, 0);
@@ -230,7 +164,6 @@ void testApp::draw() {
                     default:
                         break;
                 }
-                
             }
             ofPopMatrix();
         }
@@ -247,16 +180,137 @@ void testApp::draw() {
 //    threshFloat.draw(depthFloat.width+4, 0);
 //
 //    contours.draw((depthFloat.width+4)*2, 0);
-    
-
 //    tex.draw(0, 0, 1920.0/1080.0*DEPTH_H, DEPTH_H);
 }
 
+//--------------------------------------------------------------
+void testApp::setupGUI(){
+    gui = new  ofxUISuperCanvas("BOOM.");
+    gui->addSpacer("THRESHOLD");
+    gui->addRangeSlider("range", 0.0, 1.0, &farThreshold, &nearThreshold);
+    gui->addToggle("Boolean", &bThreshBool);
+    gui->addSpacer("SPACE");
+    gui->addToggle("Linear Filter", &bMean);
+    gui->addToggle("Median Filter", &bMedian);
+    gui->addSpacer("TIME");
+    gui->addToggle("StdDev Filter", &bUseStdDev);
+    gui->addToggle("drop/avg", &bDropPix);
+    gui->addIntSlider("n past values", 2, 10, &numPastDepth);
+    gui->addSlider("stdDev thresh", 0.0, 0.5, &stdDevThresh);
+    
+    gui->autoSizeToFitWidgets();
+}
+
+
+
+//--------------------------------------------------------------
+void testApp::scaleVals(ofFloatPixels &r) {
+    for(int i = 0; i < r.size(); i++){
+        r[i] /= 10000.0;
+        r[i] = ofClamp(1.0-r[i], 0, 1);
+        if(r[i] == 1.0) r[i] =0.0;
+    }
+}
+
+//--------------------------------------------------------------
+void testApp::threshHold(ofFloatPixels &r){
+    for(int i = 0; i < r.size(); i++){
+        r[i] = (r[i] > farThreshold && r[i] < nearThreshold) ?
+        (bThreshBool ? 1.0 : r[i])
+        : 0.0;
+    }
+}
+
+//--------------------------------------------------------------
+void testApp::meanFilter(ofFloatPixels &r){
+    ofFloatPixelsRef temp = depthFloat.getPixelsRef();
+    
+    if (temp.size() > 0) {
+        for(int x = 1; x < DEPTH_W-1; x++){
+            for (int y = 1; y < DEPTH_H-1; y++) {
+                int i = y * DEPTH_W + x;
+                int top = (y-1) * DEPTH_W + x;
+                int bottom = (y+1) * DEPTH_W + x;
+                int left = y * DEPTH_W + (x-1);
+                int right = y * DEPTH_W + (x+1);
+                
+                r[i] = bIncludePixel ?
+                (temp[i] + temp[top] + temp[bottom] + temp[left] + temp[right]) * 0.20
+                : (temp[top] + temp[bottom] + temp[left] + temp[right]) * 0.25;
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------
+void testApp::medianFilter(ofFloatPixels &r){
+    ofFloatPixelsRef temp = depthFloat.getPixelsRef();
+    
+    if (temp.size() > 0) {
+        for(int x = 1; x < DEPTH_W-1; x++){
+            for (int y = 1; y < DEPTH_H-1; y++) {
+                vector<float> neighbors;
+                neighbors.push_back(r[y * DEPTH_W + x]);
+                neighbors.push_back(r[(y-1) * DEPTH_W + x]);
+                neighbors.push_back(r[(y+1) * DEPTH_W + x]);
+                neighbors.push_back(r[y * DEPTH_W + (x-1)]);
+                neighbors.push_back(r[y * DEPTH_W + (x+1)]);
+                
+                ofSort(neighbors);
+                
+                r[y * DEPTH_W + x] = neighbors[2];
+            }
+        }
+    }
+}
+
+//--------------------------------------------------------------
+void testApp::stdDevFilter(ofFloatPixels &r){
+    if (r.size() > 0) {
+        if (pastDepthPix.size() > 0) {
+            ofFloatPixels stdDevR;
+            stdDevR.allocate(DEPTH_W, DEPTH_H, 1);
+            ofFloatPixels noiseReduceR;
+            noiseReduceR.allocate(DEPTH_W, DEPTH_H, 1);
+            
+            int zeroCount = 0;
+            float max = 0.0;
+            for(int i = 0; i < r.size(); i++){
+                vector<float> pixPast;
+                float sum = 0.0;
+                for (int j = 0; j < pastDepthPix.size(); j++) {
+                    pixPast.push_back(pastDepthPix[j][i]);
+                    sum += pastDepthPix[j][i];
+                }
+                float mean = sum / pastDepthPix.size();
+                stdDevR[i] = computeStdDev(pixPast.begin(), pixPast.end(), mean);
+                
+                if (stdDevR[i] == 0) zeroCount++;
+                if (stdDevR[i] > max) max = stdDevR[i];
+                    
+                noiseReduceR[i] = stdDevR[i] < stdDevThresh ? r[i] : (bDropPix ? 0.0 : mean);
+            }
+            
+            cout << "MAX STDEV = " << max << endl;
+            
+            if (zeroCount != stdDevR.size()) {
+                stdDevFloat.setFromPixels(stdDevR);
+                noiseReducedFloat.setFromPixels(noiseReduceR);
+            }
+        }
+            
+        pastDepthPix.push_back(r);
+        if (pastDepthPix.size() > numPastDepth) {
+            pastDepthPix.erase(pastDepthPix.begin());
+        }
+    }
+}
 
 //--------------------------------------------------------------
 void testApp::exit() {
-    closeKinect(); 
+    closeKinect();
 }
+
 
 //--------------------------------------------------------------
 void testApp::keyPressed (int key) {
@@ -266,9 +320,6 @@ void testApp::keyPressed (int key) {
     if (key == OF_KEY_RIGHT) {
         xOffset++;
     }
-    if (key == 'd') {
-        bPrintImageVals = true;
-    }
     if (key == 't') {
         bThreshBool ^= true;
     }
@@ -276,7 +327,10 @@ void testApp::keyPressed (int key) {
         bIncludePixel ^= true;
     }
     if (key == 'b') {
-        bBlur ^= true;
+        bMean ^= true;
+    }
+    if (key == 'B') {
+        bMedian ^= true;
     }
     if (key == 's') {
         bMeshSnapshot = true;
@@ -290,15 +344,15 @@ void testApp::keyPressed (int key) {
     if (key == 'n') {
         bUseNoiseReduced ^= true;
     }
+    if (key == 'd') {
+        bUseStdDev ^= true;
+    }
 
 }
 
 //--------------------------------------------------------------
 void testApp::mouseDragged(int x, int y, int button)
-{
-    nearThreshold = ofMap(x, 0, ofGetWidth(), 0.0, 1.0);
-    farThreshold = ofMap(y, 0, ofGetHeight(), 0.0, 1.0);
-}
+{}
 
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button)

@@ -4,6 +4,8 @@
 #include "ofxOpenCv.h"
 #include "Protonect.h"
 
+#include "ofxUI.h"
+
 extern int runKinect2(std::string binpath);
 
 class threadedKinect : public ofThread{
@@ -20,6 +22,14 @@ public:
 	void update();
 	void draw();
 	void exit();
+    
+    void setupGUI();
+    
+    void scaleVals(ofFloatPixels &r);
+    void threshHold(ofFloatPixels &r);
+    void meanFilter(ofFloatPixels &r);
+    void medianFilter(ofFloatPixels &r);
+    void stdDevFilter(ofFloatPixels &r);
 		
 	void keyPressed(int key);
 	void mouseDragged(int x, int y, int button);
@@ -32,13 +42,12 @@ public:
     vector<ofFloatImage> pastDepthFloats;
     vector<ofFloatPixels> pastDepthPix;
     int numPastDepth;
+    float stdDevThresh;
     
-
     ofFloatImage velFloat, lastVelFloat, stdDevFloat;
     ofFloatImage noiseReducedFloat, lastNoiseReducedFloat;
     
     float nearThreshold, farThreshold;
-    
     
     bool bPrintImageVals;
     
@@ -50,15 +59,12 @@ public:
     
     bool bThreshBool;
     bool bIncludePixel;
-    bool bBlur;
+    bool bMean, bMedian;
 
 //    ofMesh depthMesh;
     ofEasyCam cam;
     
     bool bMeshSnapshot;
-    
-//    int primitiveMode;
-//    bool bRainbow;
     
     ofPlanePrimitive plane;
     ofShader shader;
@@ -69,4 +75,7 @@ public:
     
     bool bDropPix;
     bool bUseNoiseReduced;
+    bool bUseStdDev;
+    
+    ofxUISuperCanvas * gui;
 };
