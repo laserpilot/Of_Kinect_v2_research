@@ -1,6 +1,10 @@
 #include "testApp.h"
-#include "ofxOpenCv.h"
+
 #include "computeStats.h"
+#include "weiner2.h"
+//#include "ofxCv.h"
+
+#include "ofxCv.h"
 
 
 
@@ -38,8 +42,8 @@ void testApp::setup() {
     
     bPrintImageVals = false;
     
-    nearThreshold = 0.7;
-    farThreshold = 0.5;
+    nearThreshold = 1.0;
+    farThreshold = 0.9;
     
     bThreshBool = true;
     bIncludePixel = true;
@@ -63,10 +67,19 @@ void testApp::setup() {
     
     numPastDepth = 3;
     stdDevThresh = 0.003;
+    zScale = 1000;
 //    pastDepthPix.assign(numPastDepth, ofFloatPixels());
 //    lastDepthFloat.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
     
+    ofImage sample;
+    sample.loadImage("sample.bmp");
+    sampleForSpectrum = sample;
+    
     setupGUI();
+    
+    wiener2float.allocate(512, 432, OF_IMAGE_GRAYSCALE);
+    
+    stddev_noise = 50;
 }
 
 //--------------------------------------------------------------
@@ -86,6 +99,8 @@ void testApp::update() {
     
     scaleVals(r);
     threshHold(r);
+    
+    //adaptive filtering
     
     if (bMean) {
         meanFilter(r);
@@ -124,6 +139,8 @@ void testApp::update() {
         stdDevFilter(r);
     }
    
+    
+    cam.setDistance(zScale + 500);
 //    if (r.size() > 0) {
 //        cvFloatImg.setFromPixels(r);
 //        cvGrayImg = cvFloatImg;
@@ -141,12 +158,13 @@ void testApp::draw() {
     
     shader.begin();
     shader.setUniformTexture("tex0", depthMap, 0);
+    shader.setUniform1f("scale", zScale);
     {
         cam.begin();
         {
             ofPushMatrix();
             ofRotateZ(180);
-            ofTranslate(0,  150, -1000);
+            ofTranslate(0,  150, 0);
             {
                 switch (mode) {
                     case 0:
@@ -174,6 +192,9 @@ void testApp::draw() {
     ofDisableDepthTest();
     
     depthFloat.draw(0, 0);
+//    spectrumDraw.draw(depthFloat.width+4, 0);
+//    wiener2float.draw((depthFloat.width+4)*2, 0);
+
     stdDevFloat.draw(depthFloat.width+4, 0);
 //    velFloat.draw(depthFloat.width+4, 0);
     noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
@@ -197,6 +218,11 @@ void testApp::setupGUI(){
     gui->addToggle("drop/avg", &bDropPix);
     gui->addIntSlider("n past values", 2, 10, &numPastDepth);
     gui->addSlider("stdDev thresh", 0.0, 0.5, &stdDevThresh);
+    gui->addSpacer("MESH");
+    gui->addSlider("Z scale", 1, 2000, &zScale);
+    gui->addIntSlider("noise stddev", 1, 100, &numPastDepth);
+
+    
     
     gui->autoSizeToFitWidgets();
 }
@@ -262,6 +288,42 @@ void testApp::medianFilter(ofFloatPixels &r){
             }
         }
     }
+}
+
+//--------------------------------------------------------------
+void testApp::weinerFilter(ofFloatPixels &r){
+    if(r.size() > 0){
+        Mat I;
+        I = ofxCv::toCv(depthFloat);
+        
+        Mat raw_sample;
+        raw_sample = ofxCv::toCv(sampleForSpectrum);
+        // Mat padded = padd_image(raw_sample);
+        Mat sample(raw_sample.rows, raw_sample.cols, CV_8U);
+        Mat spectrum = get_spectrum(sample);
+        
+        //        Mat paddedI = padd_image(I);
+        
+        Mat enhanced = wiener2(I, spectrum, 5);
+        
+        
+        if (bPrintImageVals) {
+            for (int i = 0; i < 512 * 432; i++) {
+                cout << spectrum.data[i] << " ";
+            }
+            bPrintImageVals = false;
+        }
+        
+        Mat floatEnhanced(enhanced.rows, enhanced.cols, CV_32F);
+        //         Mat spectrumFla(spectrum.rows, spectrum.cols, CV_32F);
+        
+        ofxCv::toOf(floatEnhanced, wiener2float);
+        
+        ofxCv::toOf(sample, spectrumDraw);
+        wiener2float.update();
+        
+    }
+
 }
 
 //--------------------------------------------------------------
@@ -346,6 +408,9 @@ void testApp::keyPressed (int key) {
     }
     if (key == 'd') {
         bUseStdDev ^= true;
+    }
+    if (key == ' ') {
+        bPrintImageVals = true;
     }
 
 }

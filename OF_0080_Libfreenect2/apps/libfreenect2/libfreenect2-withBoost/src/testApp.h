@@ -1,10 +1,13 @@
 #pragma once
 
 #include "ofMain.h"
+
 #include "ofxOpenCv.h"
+#include "ofxUI.h"
+
 #include "Protonect.h"
 
-#include "ofxUI.h"
+
 
 extern int runKinect2(std::string binpath);
 
@@ -29,6 +32,7 @@ public:
     void threshHold(ofFloatPixels &r);
     void meanFilter(ofFloatPixels &r);
     void medianFilter(ofFloatPixels &r);
+    void weinerFilter(ofFloatPixels &r);
     void stdDevFilter(ofFloatPixels &r);
 		
 	void keyPressed(int key);
@@ -46,6 +50,7 @@ public:
     
     ofFloatImage velFloat, lastVelFloat, stdDevFloat;
     ofFloatImage noiseReducedFloat, lastNoiseReducedFloat;
+    ofFloatImage wiener2float;
     
     float nearThreshold, farThreshold;
     
@@ -78,4 +83,13 @@ public:
     bool bUseStdDev;
     
     ofxUISuperCanvas * gui;
+    
+    float zScale;
+    
+    ofFloatImage sampleForSpectrum;
+    
+    int stddev_noise;
+    
+    ofImage spectrumDraw;
+    
 };

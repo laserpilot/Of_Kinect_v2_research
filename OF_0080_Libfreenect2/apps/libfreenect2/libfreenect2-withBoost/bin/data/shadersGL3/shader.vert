@@ -7,6 +7,7 @@ in vec2 texcoord;
 
 // this is how we receive the texture
 uniform sampler2DRect tex0;
+uniform float scale;
 
 out vec2 texCoordVarying;
 
@@ -16,7 +17,7 @@ void main()
     vec4 modifiedPosition = position;
     
     // we need to scale up the values we get from the texture
-    float scale = 1000;
+    //float scale = 1000;
     
     // here we get the red channel value from the texture
     // to use it as vertical displacement

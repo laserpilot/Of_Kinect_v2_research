@@ -1,18 +1,3 @@
-//
-//  computeStats.h
-//  kinectExample
-//
-//  Created by MAnbbot Blooth on 3/18/14.
-//
-//
-
-//
-//  computeStats.h
-//  just_you
-//
-//  Created by Jason Levine on 2013-11-07.
-//
-//
 
 /// This is a recipe from the O'Reilly Safari Cookbook
 /// http://safari.oreilly.com/0596007612/cplusplusckbk-CHP-11-SECT-5
