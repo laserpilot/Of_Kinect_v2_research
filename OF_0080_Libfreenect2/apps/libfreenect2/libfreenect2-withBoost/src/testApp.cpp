@@ -2,7 +2,6 @@
 
 #include "computeStats.h"
 #include "weiner2.h"
-//#include "ofxCv.h"
 
 #include "ofxCv.h"
 
@@ -35,51 +34,51 @@ void testApp::setup() {
     
     runKinect2(ofToDataPath(""));
 
-    
     tex.allocate(SENSOR_W, SENSOR_H, GL_RGB);
     
     xOffset = yOffset = 0;
-    
-    bPrintImageVals = false;
-    
+
+    //thresholding
     nearThreshold = 1.0;
     farThreshold = 0.9;
+    bThreshBool = false;
     
-    bThreshBool = true;
+    //spatial filtering
     bIncludePixel = true;
     bMean = bMedian = false;
     
-    cam.setDistance(500);
-    
-    bMeshSnapshot = false;
-    
-    plane.set(DEPTH_W, DEPTH_H, DEPTH_W/2, DEPTH_H/2);
-    plane.mapTexCoords(0, 0, DEPTH_W, DEPTH_H);
-
-    shader.load("shadersGL3/shader");
-    
-    bDrawMesh = false;
-    
-    mode = 0;
-    
-    bDropPix = false;
-    bUseNoiseReduced = false;
-    
+    //stdev time filter
     numPastDepth = 3;
     stdDevThresh = 0.003;
-    zScale = 1000;
-//    pastDepthPix.assign(numPastDepth, ofFloatPixels());
-//    lastDepthFloat.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
+    bDropPix = false;
     
+    //weiner filter
+    wiener2float.allocate(512, 432, OF_IMAGE_GRAYSCALE);
+    stddev_noise = 50;
     ofImage sample;
     sample.loadImage("sample.bmp");
     sampleForSpectrum = sample;
     
+    //mesh
+    cam.setDistance(500);
+    shader.load("shadersGL3/shader");
+
+    plane.set(DEPTH_W, DEPTH_H, DEPTH_W/2, DEPTH_H/2);
+    plane.mapTexCoords(0, 0, DEPTH_W, DEPTH_H);
+
+    bMeshSnapshot = false;
+    bDrawMesh = false;
+    
+    mode = 0;
+    zScale = 1000;
+    
+    //gui
     setupGUI();
     
-    wiener2float.allocate(512, 432, OF_IMAGE_GRAYSCALE);
-    
-    stddev_noise = 50;
+
+    //debug
+    bPrintImageVals = false;
+
 }
 
 //--------------------------------------------------------------
@@ -101,6 +100,7 @@ void testApp::update() {
     threshHold(r);
     
     //adaptive filtering
+    weinerFilter(r);
     
     if (bMean) {
         meanFilter(r);
@@ -111,36 +111,18 @@ void testApp::update() {
     }
     
     depthFloat.setFromPixels(r);
-    /*
-    if (r.size() > 0 && lastDepthFloat.isAllocated()) {
-        ofFloatPixelsRef lastR = lastDepthFloat.getPixelsRef();
-        ofFloatPixels velR; velR.allocate(lastR.getWidth(), lastR.getHeight(), OF_PIXELS_MONO);
-        ofFloatPixels noiseReduceR; noiseReduceR.allocate(lastR.getWidth(), lastR.getHeight(), OF_PIXELS_MONO);
-        int zeroCount = 0;
-        for(int i = 0; i < r.size(); i++){
-            velR[i] = abs(r[i] - lastR[i]);
-            if (velR[i] == 0) zeroCount++;
-            noiseReduceR[i] = velR[i] < 0.003 ? r[i] : (bDropPix ? 0.0 : (r[i] + lastR[i])/2);
-        }
-
-        if (zeroCount != velR.size()) {
-            velFloat.setFromPixels(velR);
-            noiseReducedFloat.setFromPixels(noiseReduceR);
-        }
-        
-        lastNoiseReducedFloat = noiseReducedFloat;
-        lastVelFloat = velFloat;
-    }
-    
-    
-    lastDepthFloat = depthFloat;*/
     
     if (bUseStdDev ) {
         stdDevFilter(r);
     }
    
     
-    cam.setDistance(zScale + 500);
+    
+    
+    if (bMeshSnapshot) {
+        exportMesh(r);
+    }
+    
 //    if (r.size() > 0) {
 //        cvFloatImg.setFromPixels(r);
 //        cvGrayImg = cvFloatImg;
@@ -152,52 +134,15 @@ void testApp::update() {
 //--------------------------------------------------------------
 void testApp::draw() {
     
-    ofEnableDepthTest();
-    
-    ofTexture depthMap = bUseStdDev ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
-    
-    shader.begin();
-    shader.setUniformTexture("tex0", depthMap, 0);
-    shader.setUniform1f("scale", zScale);
-    {
-        cam.begin();
-        {
-            ofPushMatrix();
-            ofRotateZ(180);
-            ofTranslate(0,  150, 0);
-            {
-                switch (mode) {
-                    case 0:
-                        plane.draw();
-                        break;
-                        
-                    case 1:
-                        plane.drawWireframe();
-                        break;
-                        
-                    case 2:
-                        plane.drawVertices();
-                        break;
-                        
-                    default:
-                        break;
-                }
-            }
-            ofPopMatrix();
-        }
-        cam.end();
-    }
-    shader.end();
-    
-    ofDisableDepthTest();
+    if (bDrawMesh) drawMesh();
     
     depthFloat.draw(0, 0);
-//    spectrumDraw.draw(depthFloat.width+4, 0);
-//    wiener2float.draw((depthFloat.width+4)*2, 0);
-
-    stdDevFloat.draw(depthFloat.width+4, 0);
-//    velFloat.draw(depthFloat.width+4, 0);
-    noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
+    spectrumDraw.draw(depthFloat.width+4, 0);
+    wiener2float.draw((depthFloat.width+4)*2, 0);
+//    if (bUseStdDev) {
+//        stdDevFloat.draw(depthFloat.width+4, 0);
+//        noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
+//    }
 //    threshFloat.draw(depthFloat.width+4, 0);
 //
 //    contours.draw((depthFloat.width+4)*2, 0);
@@ -213,16 +158,16 @@ void testApp::setupGUI(){
     gui->addSpacer("SPACE");
     gui->addToggle("Linear Filter", &bMean);
     gui->addToggle("Median Filter", &bMedian);
+    gui->addIntSlider("noise stddev", 1, 100, &numPastDepth);
     gui->addSpacer("TIME");
     gui->addToggle("StdDev Filter", &bUseStdDev);
     gui->addToggle("drop/avg", &bDropPix);
     gui->addIntSlider("n past values", 2, 10, &numPastDepth);
     gui->addSlider("stdDev thresh", 0.0, 0.5, &stdDevThresh);
     gui->addSpacer("MESH");
+    gui->addToggle("draw mesh", &bDrawMesh);
     gui->addSlider("Z scale", 1, 2000, &zScale);
-    gui->addIntSlider("noise stddev", 1, 100, &numPastDepth);
-
-    
+    gui->addIntSlider("render mode", 0, 2, &mode);
     
     gui->autoSizeToFitWidgets();
 }
@@ -319,7 +264,7 @@ void testApp::weinerFilter(ofFloatPixels &r){
         
         ofxCv::toOf(floatEnhanced, wiener2float);
         
-        ofxCv::toOf(sample, spectrumDraw);
+        ofxCv::toOf(raw_sample, spectrumDraw);
         wiener2float.update();
         
     }
@@ -369,6 +314,87 @@ void testApp::stdDevFilter(ofFloatPixels &r){
 }
 
 //--------------------------------------------------------------
+void testApp::drawMesh(){
+    ofEnableDepthTest();
+    
+    ofTexture depthMap = bUseStdDev ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
+    
+    shader.begin();
+    shader.setUniformTexture("tex0", depthMap, 0);
+    shader.setUniform1f("scale", zScale);
+    {
+        cam.setDistance(zScale + 500);
+        cam.begin();
+        {
+            ofPushMatrix();
+            ofRotateZ(180);
+            ofTranslate(0,  150, 0);
+            {
+                switch (mode) {
+                    case 0:
+                        plane.draw();
+                        break;
+                        
+                    case 1:
+                        plane.drawWireframe();
+                        break;
+                        
+                    case 2:
+                        plane.drawVertices();
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
+            ofPopMatrix();
+        }
+        cam.end();
+    }
+    shader.end();
+    
+    ofDisableDepthTest();
+}
+
+//--------------------------------------------------------------
+void testApp::exportMesh(ofFloatPixels &r) {
+    depthMesh.clear();
+    depthMesh.enableColors();
+    depthMesh.enableIndices();
+    
+    if (r.size() > 0) {
+        depthMesh.clear();
+        for (int y = 0; y < DEPTH_H; y++) {
+            for(int x = 0; x < DEPTH_W; x++){
+                int i = y * DEPTH_W + x;
+                //                    if (r[i] > 0.0) {
+                depthMesh.addVertex(ofVec3f(x,y, r[i]*500));
+                //                    ofFloatColor vertexCol;
+                //                    vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
+                depthMesh.addColor(ofFloatColor(r[i]));
+                //                    }
+            }
+        }
+        //
+        for (int y = 0; y<DEPTH_H-1; y++){
+            for (int x=0; x<DEPTH_W-1; x++){
+                depthMesh.addIndex(x+y*DEPTH_W);
+                depthMesh.addIndex((x+1)+y*DEPTH_W);
+                depthMesh.addIndex(x+(y+1)*DEPTH_W);
+                
+                depthMesh.addIndex((x+1)+y*DEPTH_W);
+                depthMesh.addIndex((x+1)+(y+1)*DEPTH_W);
+                depthMesh.addIndex(x+(y+1)*DEPTH_W);
+            }
+        }
+    }
+    
+    depthMesh.save(ofGetTimestampString() + ".ply", true);
+    bMeshSnapshot = false;
+
+}
+
+//--------------------------------------------------------------
 void testApp::exit() {
     closeKinect();
 }
@@ -403,9 +429,6 @@ void testApp::keyPressed (int key) {
     if (key == 'p') {
         bDropPix ^= true;
     }
-    if (key == 'n') {
-        bUseNoiseReduced ^= true;
-    }
     if (key == 'd') {
         bUseStdDev ^= true;
     }
@@ -432,38 +455,4 @@ void testApp::windowResized(int w, int h)
 {}
 
 
-//    depthMesh.enableColors();
-//    depthMesh.setMode(OF_PRIMITIVE_POINTS);
-//
-//    primitiveMode = 0;
-//    depthMesh.enableIndices();
-//
-//    bRainbow = false;
 
-//    if (r.size() > 0) {
-//        depthMesh.clear();
-//        for(int x = 0; x < DEPTH_W; x++){
-//            for (int y = 0; y < DEPTH_H; y++) {
-//                int i = y * DEPTH_W + x;
-//                if (r[i] > 0.0) {
-//                    depthMesh.addVertex(ofVec3f(x,y, r[i]*1000));
-//                    ofFloatColor vertexCol;
-//                    vertexCol.setHsb((r[i]-0.5) * 2, 1.0, 0.7);
-//                    depthMesh.addColor(bRainbow ? vertexCol : ofFloatColor(r[i]));
-//                }
-//            }
-//        }
-//
-//        for (int y = 0; y<DEPTH_H-1; y++){
-//            for (int x=0; x<DEPTH_W-1; x++){
-//                depthMesh.addIndex(x+y*DEPTH_W);       // 0
-//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
-//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
-//
-//                depthMesh.addIndex((x+1)+y*DEPTH_W);     // 1
-//                depthMesh.addIndex((x+1)+(y+1)*DEPTH_W);   // 11
-//                depthMesh.addIndex(x+(y+1)*DEPTH_W);     // 10
-//            }
-//        }
-//        bMeshSnapshot = false;
-//    }

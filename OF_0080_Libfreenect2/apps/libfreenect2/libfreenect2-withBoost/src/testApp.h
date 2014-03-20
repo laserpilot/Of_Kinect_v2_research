@@ -26,70 +26,81 @@ public:
 	void draw();
 	void exit();
     
+    //gui
     void setupGUI();
     
+    
+    //noise reduction filters
     void scaleVals(ofFloatPixels &r);
     void threshHold(ofFloatPixels &r);
     void meanFilter(ofFloatPixels &r);
     void medianFilter(ofFloatPixels &r);
     void weinerFilter(ofFloatPixels &r);
     void stdDevFilter(ofFloatPixels &r);
-		
+    
+    //mesh functions
+    void drawMesh();
+    void exportMesh(ofFloatPixels &r);
+	
+	//events
 	void keyPressed(int key);
 	void mouseDragged(int x, int y, int button);
 	void mousePressed(int x, int y, int button);
 	void mouseReleased(int x, int y, int button);
 	void windowResized(int w, int h);
-	
+    
+    
+	//kinect2!!!!!
 	threadedKinect tKinect;
-    ofFloatImage depthFloat, threshFloat, lastDepthFloat;
-    vector<ofFloatImage> pastDepthFloats;
+    ofFloatImage depthFloat;
+    
+    //thresholds
+    float nearThreshold, farThreshold;
+    bool bThreshBool;
+    
+    //spatial filtering
+    bool bIncludePixel;
+    bool bMean, bMedian;
+    
+    //stdDev time filter
     vector<ofFloatPixels> pastDepthPix;
     int numPastDepth;
     float stdDevThresh;
+    bool bDropPix, bUseStdDev;
+    ofFloatImage stdDevFloat, noiseReducedFloat;
     
-    ofFloatImage velFloat, lastVelFloat, stdDevFloat;
-    ofFloatImage noiseReducedFloat, lastNoiseReducedFloat;
+    
+    //weiner filter
     ofFloatImage wiener2float;
+    ofFloatImage sampleForSpectrum;
+    int stddev_noise;
+    ofImage spectrumDraw;
+
     
-    float nearThreshold, farThreshold;
+    //potentialy for rgb depth calibration
+    float xOffset, yOffset;
     
-    bool bPrintImageVals;
-    
-    float xOffset, yOffset, xScale, yScale;
-    
+    //cv contour finder
     ofxCvContourFinder contours;
     ofxCvFloatImage cvFloatImg;
     ofxCvGrayscaleImage cvGrayImg;
     
-    bool bThreshBool;
-    bool bIncludePixel;
-    bool bMean, bMedian;
 
-//    ofMesh depthMesh;
+    //mesh
     ofEasyCam cam;
-    
-    bool bMeshSnapshot;
-    
     ofPlanePrimitive plane;
     ofShader shader;
-    
-    bool bDrawMesh;
-    
+    ofMesh depthMesh;
     int mode;
-    
-    bool bDropPix;
-    bool bUseNoiseReduced;
-    bool bUseStdDev;
-    
+    float zScale;
+    bool bMeshSnapshot;
+    bool bDrawMesh;
+
+    //gui
     ofxUISuperCanvas * gui;
     
-    float zScale;
     
-    ofFloatImage sampleForSpectrum;
-    
-    int stddev_noise;
-    
-    ofImage spectrumDraw;
+    //debug
+    bool bPrintImageVals;
     
 };
