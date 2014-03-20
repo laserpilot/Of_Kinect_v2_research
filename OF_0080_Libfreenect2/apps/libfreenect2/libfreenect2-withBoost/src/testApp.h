@@ -30,13 +30,14 @@ public:
     void setupGUI();
     
     
-    //noise reduction filters
+    //image video proccessing
     void scaleVals(ofFloatPixels &r);
     void threshHold(ofFloatPixels &r);
     void meanFilter(ofFloatPixels &r);
-    void medianFilter(ofFloatPixels &r);
+    void medianFilterS(ofFloatPixels &r);
     void weinerFilter(ofFloatPixels &r);
     void stdDevFilter(ofFloatPixels &r);
+    void medianFilterT(ofFloatPixels &r);
     
     //mesh functions
     void drawMesh();
@@ -60,7 +61,13 @@ public:
     
     //spatial filtering
     bool bIncludePixel;
-    bool bMean, bMedian;
+    bool bMean, bMedianS, bMedianT;
+    
+    //weiner filter
+    ofFloatImage wiener2float;
+    ofFloatImage sampleForSpectrum;
+    int stddev_noise;
+    ofImage spectrumDraw;
     
     //stdDev time filter
     vector<ofFloatPixels> pastDepthPix;
@@ -69,13 +76,8 @@ public:
     bool bDropPix, bUseStdDev;
     ofFloatImage stdDevFloat, noiseReducedFloat;
     
-    
-    //weiner filter
-    ofFloatImage wiener2float;
-    ofFloatImage sampleForSpectrum;
-    int stddev_noise;
-    ofImage spectrumDraw;
-
+    //median time filter
+    ofFloatImage mediaTFloat;
     
     //potentialy for rgb depth calibration
     float xOffset, yOffset;

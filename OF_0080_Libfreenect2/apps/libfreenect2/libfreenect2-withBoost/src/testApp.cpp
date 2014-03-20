@@ -45,10 +45,10 @@ void testApp::setup() {
     
     //spatial filtering
     bIncludePixel = true;
-    bMean = bMedian = false;
+    bMean = bMedianS = bMedianT = false;
     
     //stdev time filter
-    numPastDepth = 3;
+    numPastDepth = 4;
     stdDevThresh = 0.003;
     bDropPix = false;
     
@@ -87,7 +87,7 @@ void testApp::update() {
     
 //    if ( ofGetFrameNum() % 60 == 0) shader.load("shadersGL3/shader");
 
-    updateKinect();
+//    updateKinect();
     
     if(pix.getWidth()){
         tex.loadData(pix);
@@ -100,14 +100,14 @@ void testApp::update() {
     threshHold(r);
     
     //adaptive filtering
-    weinerFilter(r);
+//    weinerFilter(r);
     
     if (bMean) {
         meanFilter(r);
     }
     
-    if (bMedian) {
-        medianFilter(r);
+    if (bMedianS) {
+        medianFilterS(r);
     }
     
     depthFloat.setFromPixels(r);
@@ -115,13 +115,24 @@ void testApp::update() {
     if (bUseStdDev ) {
         stdDevFilter(r);
     }
-   
+    
+    pastDepthPix.push_back(r);
+    if (pastDepthPix.size() > numPastDepth) {
+        pastDepthPix.erase(pastDepthPix.begin());
+    }
+
     
     
+    if (bMedianT) {
+        medianFilterT(r);
+    }
     
     if (bMeshSnapshot) {
         exportMesh(r);
     }
+    
+
+   
     
 //    if (r.size() > 0) {
 //        cvFloatImg.setFromPixels(r);
@@ -137,12 +148,17 @@ void testApp::draw() {
     if (bDrawMesh) drawMesh();
     
     depthFloat.draw(0, 0);
-    spectrumDraw.draw(depthFloat.width+4, 0);
-    wiener2float.draw((depthFloat.width+4)*2, 0);
-//    if (bUseStdDev) {
-//        stdDevFloat.draw(depthFloat.width+4, 0);
-//        noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
-//    }
+//    spectrumDraw.draw(depthFloat.width+4, 0);
+//    wiener2float.draw((depthFloat.width+4)*2, 0);
+    if (bUseStdDev) {
+        stdDevFloat.draw(depthFloat.width+4, 0);
+        noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
+    }
+    
+    if (bMedianT) {
+        mediaTFloat.draw(depthFloat.width+4, 0);
+    }
+    
 //    threshFloat.draw(depthFloat.width+4, 0);
 //
 //    contours.draw((depthFloat.width+4)*2, 0);
@@ -152,19 +168,24 @@ void testApp::draw() {
 //--------------------------------------------------------------
 void testApp::setupGUI(){
     gui = new  ofxUISuperCanvas("BOOM.");
-    gui->addSpacer("THRESHOLD");
+    gui->addSpacer();
+    gui->addLabel("THRESHOLD");
     gui->addRangeSlider("range", 0.0, 1.0, &farThreshold, &nearThreshold);
     gui->addToggle("Boolean", &bThreshBool);
-    gui->addSpacer("SPACE");
+    gui->addSpacer();
+    gui->addLabel("SPATIAL");
     gui->addToggle("Linear Filter", &bMean);
-    gui->addToggle("Median Filter", &bMedian);
-    gui->addIntSlider("noise stddev", 1, 100, &numPastDepth);
-    gui->addSpacer("TIME");
+    gui->addToggle("Median Filter", &bMedianS);
+    gui->addIntSlider("noise stddev", 1, 100, &stddev_noise);
+    gui->addSpacer();
+    gui->addLabel("TIME");
+    gui->addIntSlider("n past values", 2, 10, &numPastDepth);
     gui->addToggle("StdDev Filter", &bUseStdDev);
     gui->addToggle("drop/avg", &bDropPix);
-    gui->addIntSlider("n past values", 2, 10, &numPastDepth);
     gui->addSlider("stdDev thresh", 0.0, 0.5, &stdDevThresh);
-    gui->addSpacer("MESH");
+    gui->addToggle("Median Filter", &bMedianT);
+    gui->addSpacer();
+    gui->addLabel("MESH");
     gui->addToggle("draw mesh", &bDrawMesh);
     gui->addSlider("Z scale", 1, 2000, &zScale);
     gui->addIntSlider("render mode", 0, 2, &mode);
@@ -214,7 +235,7 @@ void testApp::meanFilter(ofFloatPixels &r){
 }
 
 //--------------------------------------------------------------
-void testApp::medianFilter(ofFloatPixels &r){
+void testApp::medianFilterS(ofFloatPixels &r){
     ofFloatPixelsRef temp = depthFloat.getPixelsRef();
     
     if (temp.size() > 0) {
@@ -305,12 +326,35 @@ void testApp::stdDevFilter(ofFloatPixels &r){
                 noiseReducedFloat.setFromPixels(noiseReduceR);
             }
         }
+    }
+}
+
+//--------------------------------------------------------------
+void testApp::medianFilterT(ofFloatPixels &r){
+    
+    if (r.size() > 0) {
+        if (pastDepthPix.size() == numPastDepth) {
             
-        pastDepthPix.push_back(r);
-        if (pastDepthPix.size() > numPastDepth) {
-            pastDepthPix.erase(pastDepthPix.begin());
+            ofFloatPixels medianTPix;
+            medianTPix.allocate(DEPTH_W, DEPTH_H, 1);
+            
+            for (int i = pastDepthPix.size() % 2; i < r.size(); i++) {
+                
+                vector<float> pastPixVals;
+                for (int j = 0; j < pastDepthPix.size(); j++) {
+                    pastPixVals.push_back(pastDepthPix[j][i]);
+                }
+                
+                pastPixVals.push_back(r[i]);
+                ofSort(pastPixVals);
+                
+                medianTPix[i] = pastPixVals[pastDepthPix.size()/2+1];
+            }
+            
+            mediaTFloat.setFromPixels(medianTPix);
         }
     }
+    
 }
 
 //--------------------------------------------------------------
@@ -416,9 +460,6 @@ void testApp::keyPressed (int key) {
     }
     if (key == 'b') {
         bMean ^= true;
-    }
-    if (key == 'B') {
-        bMedian ^= true;
     }
     if (key == 's') {
         bMeshSnapshot = true;
