@@ -41,6 +41,7 @@ void testApp::setup() {
     bIncludePixel = true;
     bMean = bMedianSCPU = bMedianSGPU = bMedianT = false;
     
+    //median gpu
     medianFilter.load("shadersGL3/median filter");
     
     medianFilterRender.set(DEPTH_W, DEPTH_H, 10, 10);
@@ -50,6 +51,13 @@ void testApp::setup() {
     medianFilteredDepth.begin();
     ofClear(0);
     medianFilteredDepth.end();
+    
+    //guassian blur gpu
+    shaderBlurX.load("shadersGL3/shaderBlurX");
+    shaderBlurY.load("shadersGL3/shaderBlurY");
+    
+    fboBlurOnePass.allocate(DEPTH_W, DEPTH_H);
+    fboBlurTwoPass.allocate(DEPTH_W, DEPTH_H);
     
     //stdev time filter
     numPastDepth = 4;
@@ -95,13 +103,16 @@ void testApp::setup() {
     
     xOffset = 250;
     xScale = 1520;
+    
+    blurAmt = 0;
 }
 
 //--------------------------------------------------------------
 void testApp::update() {
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
-    if ( ofGetFrameNum() % 60 == 0) medianFilter.load("shadersGL3/median filter");
+//    if ( ofGetFrameNum() % 60 == 0) medianFilter.load("shadersGL3/median filter");
+    if ( ofGetFrameNum() % 60 == 0) RGBD.load("shadersGL3/rgbd");
 
 //    updateKinect();
     
@@ -174,7 +185,10 @@ void testApp::update() {
 //--------------------------------------------------------------
 void testApp::draw() {
     ofSetColor(255);
+    
+
     if (bMedianSGPU) medianFilterGPU();
+    if (bGaussianBlur) guassianBlurGPU();
     if (bDrawMesh) drawMesh();
 
 //    if (bMedianS) {
@@ -184,7 +198,11 @@ void testApp::draw() {
 //    wiener2float.draw((depthFloat.width+4)*2, 0);
     
     depthFloat.draw(200, 0);
-    if (bMedianSGPU) medianFilteredDepth.draw(200+ depthFloat.width+4, 0);
+    
+
+    
+    if (bMedianSGPU) medianFilteredDepth.draw( depthFloat.width+4, 0);
+    if (bGaussianBlur) fboBlurTwoPass.draw(200+(depthFloat.width+4)*2, 0);
     
     if (bUseStdDev) {
         stdDevFloat.draw(depthFloat.width+4, 0);
@@ -201,7 +219,7 @@ void testApp::draw() {
 
 //--------------------------------------------------------------
 void testApp::setupGUI(){
-    gui = new  ofxUISuperCanvas("BOOM.");
+    gui = new  ofxUISuperCanvas("KINECT2! POW!");
     gui->addSpacer();
     gui->addLabel("THRESHOLD");
     gui->addRangeSlider("range", 0.0, 1.0, &farThreshold, &nearThreshold);
@@ -209,6 +227,8 @@ void testApp::setupGUI(){
     gui->addSpacer();
     gui->addLabel("SPATIAL");
     gui->addToggle("Linear Filter", &bMean);
+    gui->addToggle("Gaussian Blur", &bGaussianBlur);
+    gui->addSlider("Blur Amt", 0, 5, &blurAmt);
     gui->addToggle("Median Filter CPU", &bMedianSCPU);
     gui->addToggle("Median Filter GPU", &bMedianSGPU);
     gui->addIntSlider("noise stddev", 1, 100, &stddev_noise);
@@ -222,8 +242,9 @@ void testApp::setupGUI(){
     gui->addSpacer();
     gui->addLabel("MESH");
     gui->addToggle("draw mesh", &bDrawMesh);
-    gui->addSlider("Z scale", 1, 2000, &zScale);
+    gui->addToggle("use color", &bUseColor);
     gui->addIntSlider("render mode", 0, 2, &mode);
+    gui->addSlider("Z scale", 1, 2000, &zScale);
     gui->addSlider("xOffset", 0, 900, &xOffset);
     gui->addSlider("xScale", 1, 1920, &xScale);
     
@@ -270,6 +291,37 @@ void testApp::meanFilter(ofFloatPixels &r){
         }
     }
 }
+
+//--------------------------------------------------------------
+void testApp::guassianBlurGPU(){
+    
+    //----------------------------------------------------------
+    fboBlurOnePass.begin();
+
+    shaderBlurX.begin();
+    shaderBlurX.setUniform1f("blurAmnt", blurAmt);
+
+    depthFloat.draw(0, 0);
+
+    shaderBlurX.end();
+
+    fboBlurOnePass.end();
+
+    //----------------------------------------------------------
+    fboBlurTwoPass.begin();
+
+    shaderBlurY.begin();
+    shaderBlurY.setUniform1f("blurAmnt", blurAmt);
+
+    fboBlurOnePass.draw(0, 0);
+
+    shaderBlurY.end();
+
+    fboBlurTwoPass.end();
+
+    //----------------------------------------------------------
+}
+
 
 //--------------------------------------------------------------
 void testApp::medianFilterCPU(ofFloatPixels &r){
@@ -418,7 +470,10 @@ void testApp::drawMesh(){
     
 //    ofTexture depthMap = bUseStdDev ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
     
-    ofTexture depthMap = bMedianSGPU ? medianFilteredDepth.getTextureReference() : depthFloat.getTextureReference();
+    ofTexture depthMap;
+    if (bMedianSGPU) depthMap = medianFilteredDepth.getTextureReference();
+    else if (bGaussianBlur) depthMap = fboBlurTwoPass.getTextureReference();
+    else depthMap = depthFloat.getTextureReference();
     
     RGBD.begin();
     RGBD.setUniformTexture("tex0", depthMap, 0);
@@ -426,6 +481,7 @@ void testApp::drawMesh(){
     RGBD.setUniform1f("scale", zScale);
     RGBD.setUniform1f("xOffset", xOffset);
     RGBD.setUniform1f("xScale", xScale);
+    RGBD.setUniform1i("useColor", (int)bUseColor);
     {
         cam.setDistance(zScale + 500);
         cam.begin();
@@ -493,7 +549,7 @@ void testApp::exportMesh(ofFloatPixels &r) {
         }
     }
     
-    depthMesh.save(ofGetTimestampString() + ".ply", true);
+    depthMesh.save("saved meshes/" + ofGetTimestampString() + ".ply", true);
     bMeshSnapshot = false;
 
 }

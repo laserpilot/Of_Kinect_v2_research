@@ -34,6 +34,7 @@ public:
     void scaleVals(ofFloatPixels &r);
     void threshHold(ofFloatPixels &r);
     void meanFilter(ofFloatPixels &r);
+    void guassianBlurGPU();
     void medianFilterCPU(ofFloatPixels &r);
     void medianFilterGPU();
     void weinerFilter(ofFloatPixels &r);
@@ -77,6 +78,16 @@ public:
     ofFbo medianFilteredDepth;
     ofPlanePrimitive medianFilterRender;
     
+    //gaussian blur shader
+    bool bGaussianBlur;
+    ofShader shaderBlurX;
+    ofShader shaderBlurY;
+    
+    ofFbo fboBlurOnePass;
+    ofFbo fboBlurTwoPass;
+    
+    float blurAmt;
+    
     //weiner filter
     ofFloatImage wiener2float;
     ofFloatImage sampleForSpectrum;
@@ -98,8 +109,6 @@ public:
     ofxCvFloatImage cvFloatImg;
     ofxCvGrayscaleImage cvGrayImg;
     
-
-    
     //mesh
     ofEasyCam cam;
     ofPlanePrimitive plane;
@@ -109,6 +118,7 @@ public:
     float zScale;
     bool bMeshSnapshot;
     bool bDrawMesh;
+    bool bUseColor;
     float xOffset;
     float xScale;
 
