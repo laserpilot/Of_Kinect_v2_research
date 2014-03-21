@@ -3,10 +3,6 @@
 #include "computeStats.h"
 #include "weiner2.h"
 
-#include "ofxCv.h"
-
-
-
 ofTexture tex;
 
 //these are define in protonect.cpp
@@ -30,13 +26,11 @@ void testApp::setup() {
 //    ofSetLogLevel(OF_LOG_SILENT);
 
 	ofSetFrameRate(30);
-    ofBackground(20, 20, 20);
+    ofBackground(25, 25, 25);
     
     runKinect2(ofToDataPath(""));
 
     tex.allocate(SENSOR_W, SENSOR_H, GL_RGB);
-    
-    xOffset = yOffset = 0;
 
     //thresholding
     nearThreshold = 1.0;
@@ -45,7 +39,17 @@ void testApp::setup() {
     
     //spatial filtering
     bIncludePixel = true;
-    bMean = bMedianS = bMedianT = false;
+    bMean = bMedianSCPU = bMedianSGPU = bMedianT = false;
+    
+    medianFilter.load("shadersGL3/median filter");
+    
+    medianFilterRender.set(DEPTH_W, DEPTH_H, 10, 10);
+    medianFilterRender.mapTexCoords(0, 0, DEPTH_W, DEPTH_H);
+    
+    medianFilteredDepth.allocate(DEPTH_W, DEPTH_H);
+    medianFilteredDepth.begin();
+    ofClear(0);
+    medianFilteredDepth.end();
     
     //stdev time filter
     numPastDepth = 4;
@@ -59,9 +63,17 @@ void testApp::setup() {
     sample.loadImage("sample.bmp");
     sampleForSpectrum = sample;
     
+    //calibration
+//    colorCalibration.load("kinect2color.yml");
+    depthCalibration.setFillFrame(true);
+    depthCalibration.load("calibration/kinect2depth.yml");
+    
+//    depthUndistorted.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_GRAYSCALE);
+//    imitate(depthUndistorted, pixDepth);
+    
     //mesh
     cam.setDistance(500);
-    shader.load("shadersGL3/shader");
+    RGBD.load("shadersGL3/rgbd");
 
     plane.set(DEPTH_W, DEPTH_H, DEPTH_W/2, DEPTH_H/2);
     plane.mapTexCoords(0, 0, DEPTH_W, DEPTH_H);
@@ -74,27 +86,47 @@ void testApp::setup() {
     
     //gui
     setupGUI();
-    
 
     //debug
     bPrintImageVals = false;
 
+    depthUndistorted.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
+    depthGrayscale.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
 }
 
 //--------------------------------------------------------------
 void testApp::update() {
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
     
-//    if ( ofGetFrameNum() % 60 == 0) shader.load("shadersGL3/shader");
+    if ( ofGetFrameNum() % 60 == 0) medianFilter.load("shadersGL3/median filter");
 
 //    updateKinect();
     
     if(pix.getWidth()){
         tex.loadData(pix);
+        colorImage.setFromPixels(pix);
     }
+    
     
     depthFloat.setFromPixels(pixDepth.getPixelsRef());
     ofFloatPixelsRef r = depthFloat.getPixelsRef();
+    
+
+//    if (r.size() > 0) {
+//        
+//        unsigned char grayscalePix[DEPTH_W * DEPTH_H * 3];
+//        for (int i = 0; i < DEPTH_W * DEPTH_H; i++) {
+//            grayscalePix[i*3] = (unsigned char)(r[i]*255);
+//            grayscalePix[i*3+1] = (unsigned char)(r[i]*255);
+//            grayscalePix[i*3+2] = (unsigned char)(r[i]*255);
+//        }
+//    //
+//        depthUndistorted.setFromPixels(grayscalePix, DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
+//        depthUndistorted.update();
+////        depthCalibration.undistort(ofxCv::toCv(depthGrayscale), ofxCv::toCv(depthUndistorted));
+////        depthUndistorted.update();
+////        depthUndistorted = depthGrayscale;
+//    }
     
     scaleVals(r);
     threshHold(r);
@@ -106,8 +138,8 @@ void testApp::update() {
         meanFilter(r);
     }
     
-    if (bMedianS) {
-        medianFilterS(r);
+    if (bMedianSCPU) {
+        medianFilterCPU(r);
     }
     
     depthFloat.setFromPixels(r);
@@ -120,8 +152,6 @@ void testApp::update() {
     if (pastDepthPix.size() > numPastDepth) {
         pastDepthPix.erase(pastDepthPix.begin());
     }
-
-    
     
     if (bMedianT) {
         medianFilterT(r);
@@ -130,34 +160,37 @@ void testApp::update() {
     if (bMeshSnapshot) {
         exportMesh(r);
     }
-    
 
-   
-    
 //    if (r.size() > 0) {
 //        cvFloatImg.setFromPixels(r);
 //        cvGrayImg = cvFloatImg;
 //        contours.findContours(cvGrayImg, 20, (DEPTH_W*DEPTH_H)/3, 10, true);
 //    }
-
 }
 
 //--------------------------------------------------------------
 void testApp::draw() {
-    
+    ofSetColor(255);
+    if (bMedianSGPU) medianFilterGPU();
     if (bDrawMesh) drawMesh();
     
-    depthFloat.draw(0, 0);
+
+//    if (bMedianS) {
+//    }
+//    depthUndistorted.draw(200+depthFloat.width+4, 0);
 //    spectrumDraw.draw(depthFloat.width+4, 0);
 //    wiener2float.draw((depthFloat.width+4)*2, 0);
+    
+    depthFloat.draw(200, 0);
+    if (bMedianSGPU) medianFilteredDepth.draw(200+ depthFloat.width+4, 0);
+    
     if (bUseStdDev) {
         stdDevFloat.draw(depthFloat.width+4, 0);
         noiseReducedFloat.draw((depthFloat.width+4)*2, 0);
     }
     
-    if (bMedianT) {
-        mediaTFloat.draw(depthFloat.width+4, 0);
-    }
+    if (bMedianT) mediaTFloat.draw(depthFloat.width+4, 0);
+    
     
 //    threshFloat.draw(depthFloat.width+4, 0);
 //
@@ -175,7 +208,8 @@ void testApp::setupGUI(){
     gui->addSpacer();
     gui->addLabel("SPATIAL");
     gui->addToggle("Linear Filter", &bMean);
-    gui->addToggle("Median Filter", &bMedianS);
+    gui->addToggle("Median Filter CPU", &bMedianSCPU);
+    gui->addToggle("Median Filter GPU", &bMedianSGPU);
     gui->addIntSlider("noise stddev", 1, 100, &stddev_noise);
     gui->addSpacer();
     gui->addLabel("TIME");
@@ -235,7 +269,7 @@ void testApp::meanFilter(ofFloatPixels &r){
 }
 
 //--------------------------------------------------------------
-void testApp::medianFilterS(ofFloatPixels &r){
+void testApp::medianFilterCPU(ofFloatPixels &r){
     ofFloatPixelsRef temp = depthFloat.getPixelsRef();
     
     if (temp.size() > 0) {
@@ -255,6 +289,26 @@ void testApp::medianFilterS(ofFloatPixels &r){
         }
     }
 }
+
+//--------------------------------------------------------------
+void testApp::medianFilterGPU(){
+    medianFilteredDepth.begin();
+    {
+        ofClear(0);
+        medianFilter.begin();
+        medianFilter.setUniformTexture("tex0", depthFloat.getTextureReference(), 0);
+        {
+            ofPushMatrix();
+            ofTranslate(DEPTH_W/2, DEPTH_H/2);
+            medianFilterRender.draw();
+            ofPopMatrix();
+        }
+        medianFilter.end();
+    }
+    medianFilteredDepth.end();
+}
+
+
 
 //--------------------------------------------------------------
 void testApp::weinerFilter(ofFloatPixels &r){
@@ -287,9 +341,7 @@ void testApp::weinerFilter(ofFloatPixels &r){
         
         ofxCv::toOf(raw_sample, spectrumDraw);
         wiener2float.update();
-        
     }
-
 }
 
 //--------------------------------------------------------------
@@ -361,11 +413,14 @@ void testApp::medianFilterT(ofFloatPixels &r){
 void testApp::drawMesh(){
     ofEnableDepthTest();
     
-    ofTexture depthMap = bUseStdDev ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
+//    ofTexture depthMap = bUseStdDev ? noiseReducedFloat.getTextureReference() : depthFloat.getTextureReference();
     
-    shader.begin();
-    shader.setUniformTexture("tex0", depthMap, 0);
-    shader.setUniform1f("scale", zScale);
+    ofTexture depthMap = bMedianSGPU ? medianFilteredDepth.getTextureReference() : depthFloat.getTextureReference();
+    
+    RGBD.begin();
+    RGBD.setUniformTexture("tex0", depthMap, 0);
+    RGBD.setUniformTexture("tex1", tex, 1);
+    RGBD.setUniform1f("scale", zScale);
     {
         cam.setDistance(zScale + 500);
         cam.begin();
@@ -395,7 +450,7 @@ void testApp::drawMesh(){
         }
         cam.end();
     }
-    shader.end();
+    RGBD.end();
     
     ofDisableDepthTest();
 }
@@ -446,12 +501,6 @@ void testApp::exit() {
 
 //--------------------------------------------------------------
 void testApp::keyPressed (int key) {
-    if (key == OF_KEY_LEFT) {
-        xOffset--;
-    }
-    if (key == OF_KEY_RIGHT) {
-        xOffset++;
-    }
     if (key == 't') {
         bThreshBool ^= true;
     }

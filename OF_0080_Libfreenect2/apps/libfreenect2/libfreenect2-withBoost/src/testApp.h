@@ -3,6 +3,7 @@
 #include "ofMain.h"
 
 #include "ofxOpenCv.h"
+#include "ofxCv.h"
 #include "ofxUI.h"
 
 #include "Protonect.h"
@@ -29,12 +30,12 @@ public:
     //gui
     void setupGUI();
     
-    
     //image video proccessing
     void scaleVals(ofFloatPixels &r);
     void threshHold(ofFloatPixels &r);
     void meanFilter(ofFloatPixels &r);
-    void medianFilterS(ofFloatPixels &r);
+    void medianFilterCPU(ofFloatPixels &r);
+    void medianFilterGPU();
     void weinerFilter(ofFloatPixels &r);
     void stdDevFilter(ofFloatPixels &r);
     void medianFilterT(ofFloatPixels &r);
@@ -54,6 +55,14 @@ public:
 	//kinect2!!!!!
 	threadedKinect tKinect;
     ofFloatImage depthFloat;
+    ofImage colorImage;
+    
+    //calibration
+    ofxCv::Calibration depthCalibration;
+    ofxCv::Calibration colorCalibration;
+    ofImage depthUndistorted;
+    ofImage colorUndistorted;
+    ofImage depthGrayscale;
     
     //thresholds
     float nearThreshold, farThreshold;
@@ -61,7 +70,12 @@ public:
     
     //spatial filtering
     bool bIncludePixel;
-    bool bMean, bMedianS, bMedianT;
+    bool bMean, bMedianSCPU, bMedianSGPU, bMedianT;
+    
+    //median shader
+    ofShader medianFilter;
+    ofFbo medianFilteredDepth;
+    ofPlanePrimitive medianFilterRender;
     
     //weiner filter
     ofFloatImage wiener2float;
@@ -79,19 +93,17 @@ public:
     //median time filter
     ofFloatImage mediaTFloat;
     
-    //potentialy for rgb depth calibration
-    float xOffset, yOffset;
-    
     //cv contour finder
     ofxCvContourFinder contours;
     ofxCvFloatImage cvFloatImg;
     ofxCvGrayscaleImage cvGrayImg;
     
 
+    
     //mesh
     ofEasyCam cam;
     ofPlanePrimitive plane;
-    ofShader shader;
+    ofShader RGBD;
     ofMesh depthMesh;
     int mode;
     float zScale;
@@ -100,7 +112,6 @@ public:
 
     //gui
     ofxUISuperCanvas * gui;
-    
     
     //debug
     bool bPrintImageVals;
