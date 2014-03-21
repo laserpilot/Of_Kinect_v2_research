@@ -109,6 +109,8 @@ public:
     float zScale;
     bool bMeshSnapshot;
     bool bDrawMesh;
+    float xOffset;
+    float xScale;
 
     //gui
     ofxUISuperCanvas * gui;

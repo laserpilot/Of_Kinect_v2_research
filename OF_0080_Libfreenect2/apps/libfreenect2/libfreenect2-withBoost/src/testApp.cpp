@@ -92,6 +92,9 @@ void testApp::setup() {
 
     depthUndistorted.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
     depthGrayscale.allocate(DEPTH_W, DEPTH_H, OF_IMAGE_COLOR);
+    
+    xOffset = 250;
+    xScale = 1520;
 }
 
 //--------------------------------------------------------------
@@ -173,7 +176,6 @@ void testApp::draw() {
     ofSetColor(255);
     if (bMedianSGPU) medianFilterGPU();
     if (bDrawMesh) drawMesh();
-    
 
 //    if (bMedianS) {
 //    }
@@ -190,7 +192,6 @@ void testApp::draw() {
     }
     
     if (bMedianT) mediaTFloat.draw(depthFloat.width+4, 0);
-    
     
 //    threshFloat.draw(depthFloat.width+4, 0);
 //
@@ -223,6 +224,8 @@ void testApp::setupGUI(){
     gui->addToggle("draw mesh", &bDrawMesh);
     gui->addSlider("Z scale", 1, 2000, &zScale);
     gui->addIntSlider("render mode", 0, 2, &mode);
+    gui->addSlider("xOffset", 0, 900, &xOffset);
+    gui->addSlider("xScale", 1, 1920, &xScale);
     
     gui->autoSizeToFitWidgets();
 }
@@ -421,6 +424,8 @@ void testApp::drawMesh(){
     RGBD.setUniformTexture("tex0", depthMap, 0);
     RGBD.setUniformTexture("tex1", tex, 1);
     RGBD.setUniform1f("scale", zScale);
+    RGBD.setUniform1f("xOffset", xOffset);
+    RGBD.setUniform1f("xScale", xScale);
     {
         cam.setDistance(zScale + 500);
         cam.begin();
